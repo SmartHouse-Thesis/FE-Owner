@@ -326,22 +326,24 @@ export function DetailContract() {
   }, [id]);
 
   const handleChange = (value) => {
-    // console.log(value)
     const updatedArr = [...newArr];
     const newArrString = [];
-    for (let i = 0; i <= listDevices.data.length; i++) {
-      if (listDevices.data[i]?.id == value) {
+  
+    for (let i = 0; i < listDevices.data.length; i++) { // Fixed the loop condition to < instead of <=
+      if (listDevices.data[i]?.id === value) {
         let existingItemIndex = updatedArr.findIndex(
-          (item) => item.id == listDevices.data[i].id
+          (item) => item.devicePackageId === value
         );
-        if (existingItemIndex == -1) {
-          listDevices.data[i];
+  
+        if (existingItemIndex === -1) {
+          const discountAmount = listDevices.data[i].promotions.length === 0 
+            ? 0 
+            : listDevices.data[i].promotions[0].discountAmount;
+  
           updatedArr.push({
             devicePackageId: listDevices.data[i].id,
             name: listDevices.data[i].name,
-            discountAmount: listDevices?.data[i]?.promotions
-              ? listDevices?.data[i]?.promotions[0].discountAmount
-              : '',
+            discountAmount: discountAmount,
             price: listDevices.data[i].price,
             manufacturer: listDevices.data[i].manufacturer.name,
             image: listDevices.data[i].images[0].url,
@@ -350,15 +352,13 @@ export function DetailContract() {
             endWarranty: null,
             createAt: listDevices.data[i].createAt,
           });
-          //   setPackageId([...packageId, listDevices.data[i].id]);
-          //   updatedArr[existingItemIndex].quantity++;
         } else {
           return;
-          // updatedArr.push(newArray[i]);
         }
       }
     }
-    updatedArr.map((item) => newArrString.push(item.devicePackageId));
+  
+    updatedArr.forEach((item) => newArrString.push(item.devicePackageId));
     setNewArrString(newArrString);
     setNewArr(updatedArr);
   };
@@ -444,7 +444,7 @@ export function DetailContract() {
     return total;
   };
   const onSubmitUpdateContract = (response) => {
-    console.log(response, id, filterDevices[0].smartDeviceId);
+    // console.log(response, id, filterDevices[0].smartDeviceId);
     // const form = new FormData();
     // form.append('title', response.title);
     // form.append('description', response.description);
@@ -732,7 +732,7 @@ export function DetailContract() {
                         className='font-poppin font-medium text-[13px]'
                         htmlFor=''
                       >
-                        Sản phẩm 
+                        Sản phẩm (của hãng)
                       </label>
                     </div>
                     <div className='w-full'>

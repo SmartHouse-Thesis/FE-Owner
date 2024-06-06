@@ -513,7 +513,12 @@ export function RequetsPage() {
         onOk={handleDetailOk}
         onCancel={handleDetailCancel}
         footer={[
-          <Button key="contact" onClick={(e) => {
+          <Button target='_blank' key="contract" onClick={(e) => {
+            navigate(`/construction/${contractDetail.contractId}`)
+          }}>
+            Xem hợp đồng
+          </Button>,
+          <Button key="contact" type='primary' onClick={(e) => {
             mutateCustomer(contractDetail.customerId);
             navigate(`/chat/${contractDetail.id}`)
           }}>

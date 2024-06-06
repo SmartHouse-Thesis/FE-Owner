@@ -1,7 +1,7 @@
 import { Icon } from '@iconify/react';
 import { Pagination as CustomPagination } from '../components/Pagination';
 import { BreadCrumb } from '../components/BreadCrumb';
-import { Popconfirm, Spin, message, Table, Input, Button, DatePicker, Pagination as AntPagination } from 'antd';
+import { Popconfirm, Spin, message, Table, Input, Button, DatePicker, Pagination as AntPagination, Modal } from 'antd';
 import { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import contractAPI from '../api/contract';
@@ -23,6 +23,8 @@ export function DepositPage() {
     customerName: '',
     createDate: '',
   });
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [imageURL, setImageURL] = useState('');
 
   const { isPending: contractLoading, mutate } = useMutation({
     mutationFn: () => contractAPI.getNewContract('DepositPaid'),
@@ -75,6 +77,16 @@ export function DepositPage() {
       status: 'Cancelled',
     });
     setOpenPopUpConfirm(false);
+  };
+
+  const showModal = (imageURL) => {
+   
+    setImageURL(imageURL);
+    setIsModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
   };
 
   const getColumnSearchProps = (dataIndex, placeholder) => ({
@@ -202,12 +214,13 @@ export function DepositPage() {
       key: 'viewImages',
       render: (text, record) => (
         <div className='flex justify-center'>
-          <Link
-            to='/invoices'
+          <Button
+            type='link'
             className='font-poppin text-[13px] font-normal text-red-600 inline-block py-[10px] px-[20px]'
+            onClick={() => showModal(record.imageUrl)} // Pass the image URL here
           >
             Xem hình ảnh
-          </Link>
+          </Button>
         </div>
       ),
     },
@@ -271,6 +284,14 @@ export function DepositPage() {
           </div>
         </Spin>
       </div>
+      <Modal
+        visible={isModalVisible}
+        onCancel={handleCancel}
+        footer={null}
+        centered
+      >
+        <img src={imageURL} alt='Contract Image' style={{ width: '100%' }} />
+      </Modal>
     </>
   );
 }

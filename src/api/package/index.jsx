@@ -12,6 +12,11 @@ const packageAPI = {
       `${END_POINT_API.DEVICE_PACKAGE}?status=Active`
     );
   },
+  getPackageDevicesListContract: (manuName) => {
+    return axiosClient.get(
+      `${END_POINT_API.DEVICE_PACKAGE}?manufacturerName=${manuName}&status=Active`
+    );
+  },
   getPackageDevicesById: (packageId) => {
     return axiosClient.get(`${END_POINT_API.DEVICE_PACKAGE}/${packageId}`);
    },

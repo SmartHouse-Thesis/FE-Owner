@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, Spin, message, DatePicker, Popconfirm } from 'antd';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Table, Input, Spin, message, DatePicker, Popconfirm, Button } from 'antd';
+import { Link, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import dayjs from 'dayjs';
 import { BreadCrumb } from '../components/BreadCrumb';
@@ -19,6 +19,13 @@ export function SurveyPage() {
   const navigate = useNavigate();
   const [filteredDevices, setFilteredDevices] = useState([]);
   const [openPopupConfirm, setOpenPopUpConfirm] = useState(false);
+  const [searchFilters, setSearchFilters] = useState({
+    id: '',
+    customerName: '',
+    staffName: '',
+    surveyDate: '',
+  });
+
   const { isPending: deviceListLoading, mutate } = useMutation({
     mutationFn: () => surveyAPI.getSurveyListProgress(searchValue),
     onSuccess: (response) => {
@@ -32,13 +39,14 @@ export function SurveyPage() {
       });
     },
   });
+
   const { isPending: customerListLoading, mutate: mutateCustomer } = useMutation({
     mutationFn: (customerId) => customerAPI.getCustomerbyId(customerId),
     onSuccess: (response) => {
-        const id = localStorage.setItem('id', response.accountId);
-  const fullname = localStorage.setItem('fullname', response.fullName);
-  const email = localStorage.setItem('email', response.email);
-  const avatar = localStorage.setItem('avatar', response.avatar);
+      const id = localStorage.setItem('id', response.accountId);
+      const fullname = localStorage.setItem('fullname', response.fullName);
+      const email = localStorage.setItem('email', response.email);
+      const avatar = localStorage.setItem('avatar', response.avatar);
     },
     onError: () => {
       messageApi.open({
@@ -47,6 +55,7 @@ export function SurveyPage() {
       });
     },
   });
+
   useEffect(() => {
     mutate();
   }, [searchValue]);
@@ -63,17 +72,64 @@ export function SurveyPage() {
     // Handle confirmation action
   };
 
-  const handleNameSearch = (e) => {
+  const handleFilterChange = (e, fieldName) => {
     const value = e.target.value.toLowerCase();
-    const filtered = devices.filter((item) =>
-      item.name.toLowerCase().includes(value)
-    );
+    setSearchFilters((prev) => ({ ...prev, [fieldName]: value }));
+
+    const filtered = devices.filter((item) => {
+      const id = item.id.toLowerCase();
+      const customerName = item.surveyRequest.customer.fullName.toLowerCase();
+      const staffName = item.surveyRequest.staff.fullName.toLowerCase();
+      const surveyDate = dayjs(item.surveyRequest.surveyDate).format('DD-MM-YYYY').toLowerCase();
+
+      return (
+        id.includes(searchFilters.id) &&
+        customerName.includes(searchFilters.customerName) &&
+        staffName.includes(searchFilters.staffName) &&
+        surveyDate.includes(searchFilters.surveyDate)
+      );
+    });
+
     setFilteredDevices(filtered);
   };
 
   const handleDateRangeChange = (dates) => {
-    // Handle date range change
+    const [start, end] = dates;
+    const filtered = devices.filter((item) => {
+      const surveyDate = dayjs(item.surveyRequest.surveyDate);
+      return surveyDate.isBetween(start, end, null, '[]');
+    });
+    setFilteredDevices(filtered);
   };
+
+  const getColumnSearchProps = (dataIndex, placeholder, nestedDataIndex) => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          placeholder={`Tìm kiếm ${placeholder}`}
+          value={selectedKeys[0]}
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => confirm()}
+          style={{ marginBottom: 8, display: 'block' }}
+        />
+        <Button type="primary" onClick={() => confirm()} size="small" style={{ width: 90, marginRight: 8 }}>
+          Filter
+        </Button>
+        <Button onClick={() => clearFilters()} size="small" style={{ width: 90 }}>
+          Reset
+        </Button>
+      </div>
+    ),
+    filterIcon: (filtered) => <Icon icon="mdi:filter" style={{ color: filtered ? '#1890ff' : undefined }} />,
+    onFilter: (value, record) => {
+      const keys = nestedDataIndex.split('.');
+      let data = record;
+      keys.forEach(key => {
+        data = data[key];
+      });
+      return data ? data.toString().toLowerCase().includes(value.toLowerCase()) : '';
+    },
+  });
 
   const columns = [
     {
@@ -81,34 +137,7 @@ export function SurveyPage() {
       dataIndex: 'id',
       key: 'id',
       render: (id) => <span>SR{id.split('-')[0]}</span>,
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-        <div style={{ padding: 8 }}>
-          <Input
-            placeholder='Tìm kiếm mã hợp đồng'
-            value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-            onPressEnter={() => handleNameSearch(e, 'id')}
-            style={{ width: 188, marginBottom: 8, display: 'block' }}
-          />
-          <div style={{ textAlign: 'right' }}>
-            <button
-              type='button'
-              onClick={() => clearFilters()}
-              style={{ marginRight: 8 }}
-            >
-              Reset
-            </button>
-            <button
-              type='button'
-              onClick={() => confirm()}
-              style={{ marginRight: 8 }}
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      ),
-      filterIcon: () => <Icon icon='material-symbols:search' />,
+      ...getColumnSearchProps('id', 'mã hợp đồng', 'id'),
     },
     {
       title: 'Khách hàng',
@@ -117,34 +146,7 @@ export function SurveyPage() {
       render: (fullName, record) => (
         <span>{record.surveyRequest && record.surveyRequest.customer.fullName}</span>
       ),
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-        <div style={{ padding: 8 }}>
-          <Input
-            placeholder='Tìm kiếm khách hàng'
-            value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-            onPressEnter={() => handleNameSearch(e, ['surveyRequest', 'customer', 'fullName'])}
-            style={{ width: 188, marginBottom: 8, display: 'block' }}
-          />
-          <div style={{ textAlign: 'right' }}>
-            <button
-              type='button'
-              onClick={() => clearFilters()}
-              style={{ marginRight: 8 }}
-            >
-              Reset
-            </button>
-            <button
-              type='button'
-              onClick={() => confirm()}
-              style={{ marginRight: 8 }}
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      ),
-      filterIcon: () => <Icon icon='material-symbols:search' />,
+      ...getColumnSearchProps('customer.fullName', 'khách hàng', 'surveyRequest.customer.fullName'),
     },
     {
       title: 'Nhân viên',
@@ -153,38 +155,11 @@ export function SurveyPage() {
       render: (fullName, record) => (
         <span>{record.surveyRequest && record.surveyRequest.staff.fullName}</span>
       ),
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-        <div style={{ padding: 8 }}>
-          <Input
-            placeholder='Tìm kiếm nhân viên'
-            value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-            onPressEnter={() => handleNameSearch(e, ['surveyRequest', 'staff', 'fullName'])}
-            style={{ width: 188, marginBottom: 8, display: 'block' }}
-          />
-          <div style={{ textAlign: 'right' }}>
-            <button
-              type='button'
-              onClick={() => clearFilters()}
-              style={{ marginRight: 8 }}
-            >
-              Reset
-            </button>
-            <button
-              type='button'
-              onClick={() => confirm()}
-              style={{ marginRight: 8 }}
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      ),
-      filterIcon: () => <Icon icon='material-symbols:search' />,
+      ...getColumnSearchProps('staff.fullName', 'nhân viên', 'surveyRequest.staff.fullName'),
     },
     {
       title: 'Ngày báo cáo khảo sát',
-      dataIndex: ['surveyRequest', 'surveyDate'], // Update dataIndex
+      dataIndex: ['surveyRequest', 'surveyDate'],
       key: 'surveyRequest.surveyDate',
       render: (date) => dayjs(date).format('DD-MM-YYYY'),
       filterDropdown: () => (
@@ -202,14 +177,13 @@ export function SurveyPage() {
     },
     {
       title: 'Chat',
-      dataIndex: ['surveyRequest', 'customer', 'accountId'], // Update dataIndex
+      dataIndex: ['surveyRequest', 'customer', 'accountId'],
       key: 'customer.accountId',
       render: (accountId) => (
         <span className='text-blue-300' onClick={(e) => {
           mutateCustomer(accountId);
           navigate(`/chat/${accountId}`)
-        
-        }} >Liên hệ</span>
+        }}>Liên hệ</span>
       ),
     },
     {
@@ -238,8 +212,10 @@ export function SurveyPage() {
       ),
     },
   ];
+
   return (
     <>
+      {contextHolder}
       <BreadCrumb />
       <div className='px-[24px] pt-[24px]'>
         <Spin tip='Loading...' spinning={deviceListLoading}>
@@ -250,7 +226,7 @@ export function SurveyPage() {
               </span>
               <Input
                 placeholder='Tìm kiếm tên mã'
-                onChange={handleNameSearch}
+                onChange={(e) => handleFilterChange(e, 'id')}
                 style={{ width: 200 }}
               />
             </div>

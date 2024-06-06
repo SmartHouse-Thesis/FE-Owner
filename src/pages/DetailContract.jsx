@@ -732,7 +732,7 @@ export function DetailContract() {
                         className='font-poppin font-medium text-[13px]'
                         htmlFor=''
                       >
-                        Sản phẩm (của hãng)
+                        Sản phẩm 
                       </label>
                     </div>
                     <div className='w-full'>

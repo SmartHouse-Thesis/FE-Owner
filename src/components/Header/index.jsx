@@ -1,8 +1,6 @@
 import { Icon } from '@iconify/react';
 import usa_flag from '../../../public/image/flag_usa.png';
 import avatar from '../../../public/image/user.png';
-import { BreadCrumb } from '../BreadCrumb';
-import { SearchInput } from '../SearchInput';
 import { jwtDecode } from 'jwt-decode';
 import userLoginApi from '../../api/user';
 import { useContext, useEffect, useState } from 'react';
@@ -10,6 +8,8 @@ import { useMutation } from '@tanstack/react-query';
 import notificationsAPI from '../../api/notifications';
 import { PayloadContext } from '../../context/payload';
 import { message } from 'antd';
+import { Link } from 'react-router-dom';
+
 export function MainHeader() {
   const userDecode = localStorage.getItem('accessToken');
   const userInfo = jwtDecode(userDecode);
@@ -47,8 +47,9 @@ export function MainHeader() {
         });
       },
     });
+
   useEffect(() => {
-    if(payload){
+    if (payload) {
       setShowNotify(true);
       messageApi.open({
         type: 'info',
@@ -58,13 +59,15 @@ export function MainHeader() {
     mutate();
     mutateNotifications();
   }, [payload]);
+
   const showModal = () => {
     setOpenModal(!openModal);
-    setShowNotify(false)
-  }
+    setShowNotify(false);
+  };
+
   return (
     <>
-    {contextHolder}
+      {contextHolder}
       <div className='h-[70px] bg-white border-b border-[#F3F3F9] flex items-center justify-between'>
         <div className='pl-[27px] pr-[24px] flex items-center justify-end w-full'>
           <div className='flex items-center gap-[24px]'>
@@ -78,7 +81,13 @@ export function MainHeader() {
                 height='30'
                 style={{ color: '#878a99' }}
               />
-              {showNotify ? <span className='absolute w-[17px] h-[17px] text-[12px] leading-[15px] top-0 right-0 bg-red-400 rounded-full flex items-center justify-center'>!</span> : ''}
+              {showNotify ? (
+                <span className='absolute w-[17px] h-[17px] text-[12px] leading-[15px] top-0 right-0 bg-red-400 rounded-full flex items-center justify-center'>
+                  !
+                </span>
+              ) : (
+                ''
+              )}
               {openModal ? (
                 <div className='absolute w-[300px] overflow-y-scroll bg-red top-[40px] z-50 right-0 h-[250px] shadow-md'>
                   <div className='bg-[#405189] w-full h-[60px] flex items-center p-[20px]'>
@@ -89,21 +98,33 @@ export function MainHeader() {
                   <div className='w-full bg-white h-auto'>
                     <nav className='p-[10px]'>
                       <ul className=''>
-                        {notification?.map((item) => (
-                          <li className=' flex gap-[10px] border-b pb-2'>
-                            {' '}
-                            <Icon
-                              icon='mdi:alert-circle'
-                              width='30'
-                              height='30'
-                              style={{ color: '#DFF0FA' }}
-                            />
-                            <div className='flex flex-col flex-1'>
-                              <span className='text-[12px] '>{item.title}</span>
-                              <span className='text-[12px]'>{item.body}</span>
-                            </div>
-                          </li>
-                        ))}
+                        {notification?.map((item) => {
+                          let link;
+                          if (item.type === 'Survey Request') {
+                            link = `/request`;
+                          } else if (item.data.type === 'Survey Report') {
+                            link = `/survey`;
+                          } else if (item.data.type === 'Contracts Modification') {
+                            link = `/construction/${item.data.link}`;
+                          }
+                          return (
+                            <li key={item.id} className=' flex gap-[10px] border-b pb-2'>
+                              <Icon
+                                icon='mdi:alert-circle'
+                                width='30'
+                                height='30'
+                                style={{ color: '#DFF0FA' }}
+                              />
+                              <div className='flex flex-col flex-1'>
+                                <span className='text-[12px] '>{item.title}</span>
+                                <span className='text-[12px]'>{item.body}</span>
+                                <Link to={link} className='text-blue-500 text-[12px]'>
+                                  View Details
+                                </Link>
+                              </div>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </nav>
                   </div>

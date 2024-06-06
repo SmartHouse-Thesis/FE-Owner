@@ -526,7 +526,7 @@ export function DetailDoingContract() {
                   </div>
                   <div className='w-full'>
                     <div className='mb-[8px]'>
-                      <Form.Item label='Ngày kết thúc dự kiến' name='dateEnd'>
+                      <Form.Item label='Ngày kết thúc dự kiến' name='endPlanDate'>
                         <DatePicker
                           disabled
                           style={{
@@ -569,7 +569,7 @@ export function DetailDoingContract() {
                     <div className='mb-[8px]'>
                       <Form.Item
                         label='Ngày bắt đầu thực tế'
-                        name='dateStartActual'
+                        name='actualStartDate'
                       >
                         <DatePicker
                           disabled
@@ -590,7 +590,7 @@ export function DetailDoingContract() {
                     <div className='mb-[8px]'>
                       <Form.Item
                         label='Ngày kết thúc thực tế'
-                        name='dateEndActual'
+                        name='actualEndDate'
                       >
                         <DatePicker
                           disabled
@@ -692,6 +692,7 @@ export function DetailDoingContract() {
                     </div>
                     <div className='w-full'>
                       <Select
+                      disabled
                         showSearch
                         className=''
                         style={{
@@ -728,12 +729,14 @@ export function DetailDoingContract() {
                       <label
                         className='font-poppin font-medium text-[13px]'
                         htmlFor=''
+                        
                       >
-                        Sản phẩm (của hãng)
+                        Sản phẩm 
                       </label>
                     </div>
                     <div className='w-full'>
                       <Select
+                      disabled
                         showSearch
                         className=''
                         style={{

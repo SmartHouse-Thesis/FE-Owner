@@ -10,7 +10,6 @@ export function Chat() {
   const [newCustomer, setNewCustomer] = useState({});
   const { id } = useParams();
   const user = JSON.parse(localStorage.getItem('user'));
-  console.log(user);
   const { isPending: surveyReportLoading, mutate: mutateSurveyId } = useMutation({
     mutationFn: () => customerAPI.getCustomerbyId(id),
     onSuccess: (response) => {
@@ -46,9 +45,9 @@ export function Chat() {
         return; // Exit function if newCustomer is not available
       }
       const other = new Talk.User({
-        id: newId,
-        name: name,
-        email: email,
+        id: newId ? newId: '959b6a80-9bb6-4ffb-86ac-0f5221471616',
+        name: name ? name : 'Nguyen Minh Tuan',
+        email: email ? email : 'tuan@gmail.com',
         photoUrl: avatar ? avatar : 'https://talkjs.com/new-web/avatar-7.jpg',
       });
 

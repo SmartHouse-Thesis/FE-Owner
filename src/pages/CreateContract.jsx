@@ -453,7 +453,7 @@ export function CreateContract() {
                         className='font-poppin font-medium text-[13px]'
                         htmlFor=''
                       >
-                        Sản phẩm (của hãng)
+                        Sản phẩm
                       </label>
                     </div>
                     <div className='w-full'>
@@ -496,7 +496,7 @@ export function CreateContract() {
                         className='font-poppin font-medium text-[13px]'
                         htmlFor=''
                       >
-                      Gói sản phẩm (của hãng)
+                      Gói sản phẩm
                       </label>
                     </div>
                     <div className='w-full'>

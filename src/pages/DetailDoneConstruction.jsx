@@ -526,7 +526,7 @@ export function DetailDoneConstruction() {
                   </div>
                   <div className='w-full'>
                     <div className='mb-[8px]'>
-                      <Form.Item label='Ngày kết thúc dự kiến' name='dateEnd'>
+                      <Form.Item label='Ngày kết thúc dự kiến' name='endPlanDate'>
                         <DatePicker
                           disabled
                           style={{
@@ -569,7 +569,7 @@ export function DetailDoneConstruction() {
                     <div className='mb-[8px]'>
                       <Form.Item
                         label='Ngày bắt đầu thực tế'
-                        name='dateStartActual'
+                        name='actualStartDate'
                       >
                         <DatePicker
                           disabled
@@ -590,7 +590,7 @@ export function DetailDoneConstruction() {
                     <div className='mb-[8px]'>
                       <Form.Item
                         label='Ngày kết thúc thực tế'
-                        name='dateEndActual'
+                        name='actualEndDate'
                       >
                         <DatePicker
                           disabled
@@ -692,6 +692,7 @@ export function DetailDoneConstruction() {
                     </div>
                     <div className='w-full'>
                       <Select
+                      disabled
                         showSearch
                         className=''
                         style={{
@@ -729,11 +730,12 @@ export function DetailDoneConstruction() {
                         className='font-poppin font-medium text-[13px]'
                         htmlFor=''
                       >
-                        Sản phẩm (của hãng)
+                        Sản phẩm
                       </label>
                     </div>
                     <div className='w-full'>
                       <Select
+                      disabled
                         showSearch
                         className=''
                         style={{
@@ -825,7 +827,7 @@ export function DetailDoneConstruction() {
                     </tr>
                   ))}
                 </table>
-                <Pagination />
+           
               </div>
               <div className='px-[24px] pt-[24px]'>
                 <div className='bg-[white]  pt-[13px] pb-[16px] shadow-md'>
@@ -890,7 +892,7 @@ export function DetailDoneConstruction() {
                       </tr>
                     ))}
                   </table>
-                  <Pagination />
+          
                 </div>
               </div>
             </div>

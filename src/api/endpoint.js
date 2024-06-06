@@ -12,6 +12,7 @@ export const END_POINT_API = {
     LEADER: "/api/staffs/leader",
     SURVEY_REPORT: "/api/survey-reports",
     CUSTOMER: "/api/customers",
-    NOTIFICATION: "/api/notifications"
+    NOTIFICATION: "/api/notifications",
+    CONTRACT_REQUEST: "/api/contract-requests"
   };
   

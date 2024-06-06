@@ -1,8 +1,6 @@
 import { Icon } from '@iconify/react';
 import user from '../../public/image/user.png';
-import { Pagination as CustomPagination } from '../components/Pagination';
-import { BreadCrumb } from '../components/BreadCrumb';
-import { Popconfirm, Spin, message, Table, Input, Button, DatePicker, Pagination as AntPagination  } from 'antd';
+import { Popconfirm, Spin, message, Table, Input, Button, DatePicker, Pagination as AntPagination } from 'antd';
 import { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import contractAPI from '../api/contract';
@@ -12,10 +10,9 @@ import dayjs from 'dayjs';
 
 export function NewContract() {
   const [messageApi, contextHolder] = message.useMessage();
-  const [contractId, setContractId] = useState();
+  const [contractId, setContractId] = useState(null); // Ensure initial state is null
   const [contracts, setContracts] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [openPopupConfirm, setOpenPopUpConfirm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchFilters, setSearchFilters] = useState({
@@ -24,10 +21,12 @@ export function NewContract() {
     customerName: '',
     createDate: '',
   });
+
   const handlePaginationChange = (page, pageSize) => {
     setCurrentPage(page);
     setPageSize(pageSize);
   };
+
   const { isPending: contractLoading, mutate } = useMutation({
     mutationFn: () => contractAPI.getNewContract('PendingDeposit'),
     onSuccess: (response) => {
@@ -42,35 +41,34 @@ export function NewContract() {
     },
   });
 
-  const { isPending: updateContractLoading, mutate: mutateUpdateContract } =
-    useMutation({
-      mutationFn: (params) => contractAPI.updateContract(params, contractId),
-      onSuccess: (response) => {
-        messageApi.open({
-          type: 'success',
-          content: 'Cập nhật hợp đồng thành công',
-        });
-        mutate(); // Refresh the contract list after update
-      },
-      onError: (response) => {
-        messageApi.open({
-          type: 'error',
-          content: response?.response.data.message,
-        });
-      },
-    });
+  const { isPending: updateContractLoading, mutate: mutateUpdateContract } = useMutation({
+    mutationFn: (params) => contractAPI.updateContract(params, params.id), // Update with params.id
+    onSuccess: (response) => {
+      messageApi.open({
+        type: 'success',
+        content: 'Cập nhật hợp đồng thành công',
+      });
+      mutate(); // Refresh the contract list after update
+      setContractId(null); // Reset contractId after success
+    },
+    onError: (response) => {
+      messageApi.open({
+        type: 'error',
+        content: response?.response.data.message,
+      });
+    },
+  });
 
   useEffect(() => {
     mutate();
   }, []);
 
   const handleCancelPopUpConfirm = () => {
-    setOpenPopUpConfirm(false);
+    setContractId(null); // Reset contractId on cancel
   };
 
   const showPopconfirm = (contractId) => {
-    setOpenPopUpConfirm(true);
-    setContractId(contractId);
+    setContractId(contractId); // Set contractId when showing Popconfirm
   };
 
   const handleOkPopUpConfirm = () => {
@@ -78,7 +76,6 @@ export function NewContract() {
       id: contractId,
       status: 'Cancelled',
     });
-    setOpenPopUpConfirm(false);
   };
 
   const getColumnSearchProps = (dataIndex, placeholder) => ({
@@ -87,7 +84,7 @@ export function NewContract() {
         <Input
           placeholder={`Tìm kiếm ${placeholder}`}
           value={selectedKeys[0]}
-          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
           onPressEnter={() => confirm()}
           style={{ marginBottom: 8, display: 'block' }}
         />
@@ -108,7 +105,7 @@ export function NewContract() {
         </Button>
       </div>
     ),
-    filterIcon: filtered => <Icon icon="mdi:filter" style={{ color: filtered ? '#1890ff' : undefined }} />,
+    filterIcon: (filtered) => <Icon icon="mdi:filter" style={{ color: filtered ? '#1890ff' : undefined }} />,
     onFilter: (value, record) =>
       record[dataIndex]
         ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
@@ -122,7 +119,7 @@ export function NewContract() {
       key: 'id',
       ...getColumnSearchProps('id', 'mã hợp đồng'),
       render: (text) => (
-        <span className='font-poppin text-[14px] font-medium text-[#495057]'>
+        <span className="font-poppin text-[14px] font-medium text-[#495057]">
           {truncateText(text, 20)}
         </span>
       ),
@@ -133,7 +130,7 @@ export function NewContract() {
       key: 'description',
       ...getColumnSearchProps('description', 'mô tả'),
       render: (text) => (
-        <span className='font-poppin text-[14px] font-medium'>
+        <span className="font-poppin text-[14px] font-medium">
           {truncateText(text, 40)}
         </span>
       ),
@@ -144,7 +141,7 @@ export function NewContract() {
       key: 'customerName',
       ...getColumnSearchProps(['customer', 'fullName'], 'tên khách hàng'),
       render: (text, record) => (
-        <span className='font-poppin text-[14px] font-medium'>
+        <span className="font-poppin text-[14px] font-medium">
           {record.customer.fullName}
         </span>
       ),
@@ -158,7 +155,7 @@ export function NewContract() {
           <DatePicker
             format="DD-MM-YYYY"
             value={selectedKeys[0] ? dayjs(selectedKeys[0], 'DD-MM-YYYY') : null}
-            onChange={date => setSelectedKeys(date ? [dayjs(date).format('DD-MM-YYYY')] : [])}
+            onChange={(date) => setSelectedKeys(date ? [dayjs(date).format('DD-MM-YYYY')] : [])}
             onPressEnter={() => confirm()}
             style={{ width: 188, marginBottom: 8, display: 'block' }}
           />
@@ -179,10 +176,10 @@ export function NewContract() {
           </Button>
         </div>
       ),
-      filterIcon: filtered => <Icon icon="mdi:filter" style={{ color: filtered ? '#1890ff' : undefined }} />,
+      filterIcon: (filtered) => <Icon icon="mdi:filter" style={{ color: filtered ? '#1890ff' : undefined }} />,
       onFilter: (value, record) => dayjs(record.createAt).format('DD-MM-YYYY').includes(value),
       render: (text) => (
-        <span className='font-poppin text-[14px] font-medium'>
+        <span className="font-poppin text-[14px] font-medium">
           {dayjs(text).format('DD-MM-YYYY')}
         </span>
       ),
@@ -191,10 +188,10 @@ export function NewContract() {
       title: 'Xem chi tiết',
       key: 'view',
       render: (text, record) => (
-        <div className=''>
+        <div className="">
           <Link
             to={`/construction/${record.id}`}
-            className='font-poppin text-[13px] font-normal text-green-300-600 inline-block '
+            className="font-poppin text-[13px] font-normal text-green-300-600 inline-block "
           >
             Xem chi tiết
           </Link>
@@ -205,10 +202,10 @@ export function NewContract() {
       title: 'Hủy hợp đồng',
       key: 'cancel',
       render: (text, record) => (
-        <div className='flex justify-center'>
+        <div className="flex justify-center">
           <Popconfirm
-            title='Hủy hợp đồng'
-            description='Bạn có muốn hủy hợp đồng này không'
+            title="Hủy hợp đồng"
+            description="Bạn có muốn hủy hợp đồng này không"
             open={contractId === record.id}
             onConfirm={handleOkPopUpConfirm}
             okButtonProps={{
@@ -217,9 +214,9 @@ export function NewContract() {
             onCancel={handleCancelPopUpConfirm}
           >
             <Icon
-              icon='material-symbols:delete-forever-rounded'
-              width='20'
-              height='20'
+              icon="material-symbols:delete-forever-rounded"
+              width="20"
+              height="20"
               style={{ color: '#2f8e58', cursor: 'pointer' }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -235,14 +232,14 @@ export function NewContract() {
   return (
     <>
       {contextHolder}
-      <div className='px-[24px]'>
-        <Spin tip='Loading...' spinning={contractLoading}>
-          <div className='bg-[white] pt-[13px] pb-[16px]'>
+      <div className="px-[24px]">
+        <Spin tip="Loading..." spinning={contractLoading}>
+          <div className="bg-[white] pt-[13px] pb-[16px]">
             <Table
               columns={columns}
               dataSource={filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
               pagination={false}
-              rowKey='id'
+              rowKey="id"
             />
             <AntPagination
               current={currentPage}

@@ -100,7 +100,7 @@ export function MainHeader() {
                       <ul className=''>
                         {notification?.map((item) => {
                           let link;
-                          if (item.type === 'Survey Request') {
+                          if (item.data.type === 'Survey Request') {
                             link = `/request`;
                           } else if (item.data.type === 'Survey Report') {
                             link = `/survey`;

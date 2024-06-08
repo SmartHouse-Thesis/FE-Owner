@@ -15,6 +15,7 @@ import { useMutation } from '@tanstack/react-query';
 import contractAPI from '../api/contract';
 import { useEffect, useState } from 'react';
 import { message } from 'antd';
+import overlay from '../../public/image/overlayprofile.png';
 
 export function Invoices() {
   const [contract, setContract] = useState();
@@ -129,6 +130,7 @@ export function Invoices() {
   });
   return (
     <div>
+
       <PDFViewer style={styles.pdf} className='app'>
         <Document>
           <Page size='A4' style={styles.page}>
@@ -161,7 +163,7 @@ export function Invoices() {
                 bên dưới đây:
               </Text>
               <Text style={styles.textBold}>
-                Bên A(Bên giao khoán): Ông/Bà
+                Bên A(Bên giao khoán): Ông/Bà&nbsp;
                 {contract?.customer.fullName}
               </Text>
               <Text style={styles.textRegular}>
@@ -221,6 +223,7 @@ export function Invoices() {
               </Text>
               <Text style={styles.textRegular}>
                 - Giá trị hợp đồng là: ……………………….đ ( ………………………….. đồng chẵn./.)
+                
               </Text>
               <Text style={styles.textBold}>
                 Điều 5: Trách nhiệm của mỗi bên:

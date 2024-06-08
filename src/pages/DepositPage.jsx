@@ -63,11 +63,12 @@ export function DepositPage() {
   }, []);
 
   const handleCancelPopUpConfirm = () => {
-    setOpenPopUpConfirm(false);
+    //setOpenPopUpConfirm(false);
+    setContractId(null);
   };
 
   const showPopconfirm = (contractId) => {
-    setOpenPopUpConfirm(true);
+    //setOpenPopUpConfirm(true);
     setContractId(contractId);
   };
 
@@ -232,7 +233,8 @@ export function DepositPage() {
           <Popconfirm
             title='Hủy hợp đồng'
             description='Bạn có muốn hủy hợp đồng này không'
-            open={openPopupConfirm === record.id}
+            //open={openPopupConfirm === record.id}
+            open={contractId === record.id}
             onConfirm={handleOkPopUpConfirm}
             okButtonProps={{
               loading: updateContractLoading,

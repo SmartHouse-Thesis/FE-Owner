@@ -1,7 +1,6 @@
+import React, { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
-import { Pagination as CustomPagination } from '../components/Pagination';
-import { Spin, message, Table, Input, Button, DatePicker ,   Pagination as AntPagination} from 'antd';
-import { useEffect, useState } from 'react';
+import { Spin, message, Table, Input, Button, DatePicker, Modal, Pagination as AntPagination } from 'antd';
 import { useMutation } from '@tanstack/react-query';
 import contractAPI from '../api/contract';
 import { Link } from 'react-router-dom';
@@ -14,6 +13,8 @@ export function DoneConstruction() {
   const [filteredData, setFilteredData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [imageSrc, setImageSrc] = useState('');
 
   const { isPending: contractLoading, mutate } = useMutation({
     mutationFn: () => contractAPI.getNewContract('Completed'),
@@ -161,12 +162,16 @@ export function DoneConstruction() {
           <span className='font-poppin text-[14px] font-medium'>
             {record.price}
           </span>
-          <Link
-            to='/acceptance'
+          <Button
+            type='link'
+            onClick={() => {
+              setImageSrc(record.imageUrl);
+              setModalVisible(true);
+            }}
             className='font-poppin text-[13px] font-normal text-red-600 inline-block py-[10px] px-[20px]'
           >
             Xem bản nghiệm thu
-          </Link>
+          </Button>
         </div>
       ),
     },
@@ -201,6 +206,13 @@ export function DoneConstruction() {
           </div>
         </Spin>
       </div>
+      <Modal
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={null}
+      >
+        <img src={imageSrc} alt='Acceptance' style={{ width: '100%' }} />
+      </Modal>
     </>
   );
 }

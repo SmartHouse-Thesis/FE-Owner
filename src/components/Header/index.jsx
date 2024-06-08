@@ -103,9 +103,12 @@ export function MainHeader() {
                           if (item.data.type === 'Survey Request') {
                             link = `/request`;
                           } else if (item.data.type === 'Survey Report') {
-                            link = `/survey`;
-                          } else if (item.data.type === 'Contracts Modification') {
-                            link = `/construction/${item.data.link}`;
+                            link = `/survey/contract-detail/${item.data.link}`;
+                          } else if (item.data.type === 'Deposit') {
+                            link = `/construction/deposit`;
+                          }
+                           else if (item.data.type === 'Contracts Modification') {
+                            link = `/request`;
                           }
                           return (
                             <li key={item.id} className=' flex gap-[10px] border-b pb-2'>

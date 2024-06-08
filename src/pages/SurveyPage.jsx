@@ -159,8 +159,8 @@ export function SurveyPage() {
     },
     {
       title: 'Ngày báo cáo khảo sát',
-      dataIndex: ['surveyRequest', 'surveyDate'],
-      key: 'surveyRequest.surveyDate',
+      dataIndex: ['surveyRequest', 'createAt'],
+      key: 'surveyRequest.createAt',
       render: (date) => dayjs(date).format('DD-MM-YYYY'),
       filterDropdown: () => (
         <RangePicker onChange={handleDateRangeChange} />
@@ -173,6 +173,14 @@ export function SurveyPage() {
       key: 'id',
       render: (id) => (
         <Link to={`/survey/create-contract-detail/${id}`}>Tạo hợp đồng</Link>
+      ),
+    },
+    {
+      title: 'Xem khảo sát',
+      dataIndex: 'id',
+      key: 'id',
+      render: (id) => (
+        <Link to={`/survey/contract-detail/${id}`}>Xem khảo sát</Link>
       ),
     },
     {

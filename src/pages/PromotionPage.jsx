@@ -67,6 +67,19 @@ export function PromotionPage() {
     setFilteredData(filtered);
   };
 
+  const statusColor = (status) => {
+    switch (status) {
+      case 'Active':
+        return 'green';
+      case 'InActive':
+        return 'orange';
+      case 'Expired':
+        return 'red';
+      default:
+        return 'grey';
+    }
+  };
+
   const columns = [
     {
       title: 'Tên mã',
@@ -120,6 +133,28 @@ export function PromotionPage() {
         />
       ),
       filterIcon: () => <Icon icon='material-symbols:date-range' />,
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status) => {
+        let statusText = '';
+        switch (status) {
+          case 'Active':
+            statusText = 'đang hoạt động';
+            break;
+          case 'InActive':
+            statusText = 'chưa bắt đầu';
+            break;
+          case 'Expired':
+            statusText = 'đã hết hạn';
+            break;
+          default:
+            statusText = status;
+        }
+        return <span style={{ color: statusColor(status) }}>{statusText}</span>;
+      },
     },
   ];
 

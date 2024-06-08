@@ -54,6 +54,7 @@ export function RequetsPage() {
     phoneNumber: '',
     surveyDate: '',
   });
+  const [form] = Form.useForm();
   const navigate = useNavigate();
   const [contractFilters, setContractFilters] = useState({
     contractID: '',
@@ -110,6 +111,7 @@ export function RequetsPage() {
       "status": values.status,
       "description": values.description
     })
+    
     setIsUpdateStatusOpen(false);
   };
 
@@ -189,7 +191,9 @@ export function RequetsPage() {
         type: 'success',
         content: 'Thêm nhân viên khảo sát thành công',
       });
+     form.resetFields();
     },
+
     onError: (error) => {
       setIsModalOpen(false);
       messageApi.open({
@@ -593,7 +597,7 @@ export function RequetsPage() {
         <div className="flex items-center justify-between mb-[20px]">
           <span>Gán nhân viên</span>
         </div>
-        <Form layout="vertical" onFinish={onSubmitCreateSurvey}>
+        <Form form={form} layout="vertical" onFinish={onSubmitCreateSurvey}>
           <Row gutter={[10, 10]}>
             <Col span={24}>
               <Form.Item label="Chọn ngày" name="surveyDate">

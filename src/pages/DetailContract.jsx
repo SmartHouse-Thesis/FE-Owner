@@ -1,4 +1,4 @@
-import { Link, NavLink, Outlet, useParams } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate, useParams } from 'react-router-dom';
 import profileImage from '../../public/image/profile.jpeg';
 import overlay from '../../public/image/overlayprofile.png';
 import github from '../../public/image/github-icon.png';
@@ -47,6 +47,7 @@ export function DetailContract() {
   const [listStaff, setListStaff] = useState({
     responses: [],
   });
+  const [filterDevicePackage, setFilterDevicesPackage] = useState([]);
   const [selectedFiles, setselectedFiles] = useState();
   const [filterDevices, setFilterDevices] = useState([]);
   const [listDevices, setListDevice] = useState({
@@ -62,16 +63,20 @@ export function DetailContract() {
   const [arrProduct, setArrProduct] = useState([]);
   const [packageId, setPackageId] = useState([]);
   const [devicesRender, setDevicesRender] = useState();
+  const [manuDevice, setManuDevice] = useState();
   const [surveyReportList, setSurveyReportList] = useState();
   const { id } = useParams();
   const [contract, setContract] = useState();
-
+const navigate = useNavigate();
   const { isPending: contractDetailLoading, mutate: mutateContractId } =
     useMutation({
       mutationFn: () => contractAPI.getNewContractById(id),
       onSuccess: (response) => {
-        console.log(response)
+        console.log(response);
         setContract(response);
+        setManuDevice(response.devicePackageUsages[0].manufacturer)
+        
+        // console.log(idCountMap, updatedPackages);
         const filteredData = response.contractDetails
           .filter((item) => item.type === 'PURCHASE')
           .map((item) => ({
@@ -108,17 +113,25 @@ export function DetailContract() {
           (item) => item.type === 'PURCHASE'
         );
         setNewArrSmart(filterContractDetail);
-
-        const foundItem = newArr.findIndex(
-          (item) => item.id == response.devicePackageUsages.id
-        );
-
-        if (foundItem == -1) {
-          // setNewArr([...newArr, response.devicePackageUsages]);
-          setNewArr(response.devicePackageUsages.flat());
-
-          setPackageId([...packageId, response.devicePackageUsages.id]);
-        }
+        const uniquePackages = [];
+        const packageIdItem = [];
+          response.devicePackageUsages.forEach((packageItem, index) => {
+            packageIdItem.push(packageItem.devicePackageId);
+            console.log(packageIdItem);
+            const existingItemIndex = uniquePackages.findIndex(
+              (item) => item.devicePackageId === packageItem.devicePackageId
+            );
+            if (existingItemIndex !== -1) {
+              // Nếu item đã tồn tại, cập nhật quantity
+              uniquePackages[existingItemIndex].quantity++;
+            } else {
+              // Nếu item chưa tồn tại, thêm mới vào mảng uniquePackages
+              uniquePackages.push({ ...packageItem, quantity: 1 });
+            }
+          });
+          setNewArr(uniquePackages);
+          setNewArrString(packageIdItem);
+       
       },
       onError: () => {
         messageApi.open({
@@ -127,7 +140,7 @@ export function DetailContract() {
         });
       },
     });
-
+  console.log(newArr);
   const { isPending: contractLoading, mutate } = useMutation({
     mutationFn: () => promotionAPI.getPromotion(),
     onSuccess: (response) => {
@@ -203,7 +216,11 @@ export function DetailContract() {
           type: 'success',
           content: 'Chỉnh sửa hợp đồng thành công',
         });
+        setTimeout(() => {
+          navigate('/construction')
+        }, 1000)
       },
+      
       onError: (error) => {
         messageApi.open({
           type: 'error',
@@ -212,7 +229,7 @@ export function DetailContract() {
       },
     });
   const { isPending: deviceListLoading, mutate: mutateDevices } = useMutation({
-    mutationFn: () => packageAPI.getPackageDevices(''),
+    mutationFn: () => packageAPI.getPackageDevicesListContract(manuDevice),
     onSuccess: (response) => {
       const outputArray = [];
       setListDevice(response);
@@ -254,6 +271,50 @@ export function DetailContract() {
       });
     },
   });
+  const increaseQuantityPackage = (index) => {
+    // Tạo một bản sao mới của mảng newArr
+    const newArrCopy = [...newArr];
+
+    // Tăng giá trị quantity của phần tử tương ứng
+    newArrCopy[index].quantity += 1;
+    setNewArr(newArrCopy);
+    // const filteredDevices = newArrCopy.map((device) => {
+    //   return {
+    //     smartDeviceId: device.smartDeviceId,
+    //     quantity: device.quantity,
+    //   };
+    // });
+    arrString.push(newArrCopy[index].devicePackageId);
+    
+  };
+
+  const decreaseQuantityPackage = (index) => {
+    // Tạo một bản sao mới của mảng newArr
+    const newArrCopy = [...newArr];
+    // Tăng giá trị quantity của phần tử tương ứng
+    if (newArrCopy[index].quantity == 0) {
+      newArrCopy[index].quantity = 0;
+    } else {
+      newArrCopy[index].quantity -= 1;
+    }
+
+    setNewArr(newArrCopy);
+    const indexT = arrString.indexOf(newArrCopy[index].devicePackageId);
+    if (indexT !== -1) {
+      arrString.splice(index, 1);
+    }
+
+    console.log(arrString);
+    // const filteredDevices = newArrCopy.map((device) => {
+    //   return {
+    //     smartDeviceId: device.smartDeviceId,
+    //     quantity: device.quantity,
+    //   };
+    // });
+
+    // Cập nhật lại state của newArr với bản sao mới
+    // setFilterDevicesPackage(filteredDevices);
+  };
   const increaseQuantity = (index) => {
     // Tạo một bản sao mới của mảng newArr
     const newArrCopy = [...newArrSmart];
@@ -304,11 +365,9 @@ export function DetailContract() {
 
         if (foundItem == -1) {
           setNewArr([...newArr, response.recommendDevicePackage]);
-        
+
           setPackageId([...packageId, response.recommendDevicePackage.id]);
         }
-
-        // console.log(arrProduct);
       },
     });
 
@@ -319,49 +378,59 @@ export function DetailContract() {
       // MutateManu();
       mutateContractId();
       mutateSurveyId();
-      mutateDevices();
       // mutateLeadStaff();
       mutateSmartDevice();
     }
-  }, [id]);
+    if(manuDevice){
+      mutateDevices(manuDevice);
+    }
+  }, [id, manuDevice]);
 
   const handleChange = (value) => {
     const updatedArr = [...newArr];
     const newArrString = [];
-  
-    for (let i = 0; i < listDevices.data.length; i++) { // Fixed the loop condition to < instead of <=
-      if (listDevices.data[i]?.id === value) {
+    let newArrList = listDevices.data.map((item) => {
+      return {
+        ...item,
+        quantity: 1,
+      };
+    });
+    for (let i = 0; i < newArrList.length; i++) {
+      // Fixed the loop condition to < instead of <=
+      if (newArrList[i]?.id === value) {
         let existingItemIndex = updatedArr.findIndex(
           (item) => item.devicePackageId === value
         );
-  
+
         if (existingItemIndex === -1) {
-          const discountAmount = listDevices.data[i].promotions.length === 0 
-            ? 0 
-            : listDevices.data[i].promotions[0].discountAmount;
-  
+          const discountAmount =
+            newArrList[i].promotions.length === 0
+              ? 0
+              : newArrList[i].promotions[0].discountAmount;
+
           updatedArr.push({
-            devicePackageId: listDevices.data[i].id,
-            name: listDevices.data[i].name,
+            devicePackageId: newArrList[i].id,
+            name: newArrList[i].name,
             discountAmount: discountAmount,
-            price: listDevices.data[i].price,
-            manufacturer: listDevices.data[i].manufacturer.name,
-            image: listDevices.data[i].images[0].url,
-            warrantyDuration: listDevices.data[i].warrantyDuration,
+            price: newArrList[i].price,
+            quantity: 1,
+            manufacturer: newArrList[i].manufacturer.name,
+            image: newArrList[i].images[0].url,
+            warrantyDuration: newArrList[i].warrantyDuration,
             startWarranty: null,
             endWarranty: null,
-            createAt: listDevices.data[i].createAt,
+            createAt: newArrList[i].createAt,
           });
         } else {
           return;
         }
       }
     }
-  
     updatedArr.forEach((item) => newArrString.push(item.devicePackageId));
     setNewArrString(newArrString);
     setNewArr(updatedArr);
   };
+
   const handleSmartChange = (value) => {
     const updatedArr = [...newArrSmart];
 
@@ -412,15 +481,22 @@ export function DetailContract() {
     const productPrice = newArrSmart.reduce((total, item) => {
       const devicePrice = item.price * item.quantity;
       const installationPrice = item.installationPrice * item.quantity;
-      return total += (devicePrice + installationPrice);
-  }, 0);
+      return (total += devicePrice + installationPrice);
+    }, 0);
+
     const smartDevicePrice = newArr.reduce((total, packageItem) => {
       let packagePrice = packageItem.price;
       if (packageItem.discountAmount) {
-          packagePrice = packageItem.price - (packageItem.price * (packageItem.discountAmount / 100));
+        packagePrice =
+          packageItem.price * packageItem.quantity -
+          packageItem.price *
+            packageItem.quantity *
+            (packageItem.discountAmount / 100);
+      } else {
+        packagePrice = packageItem.price * packageItem.quantity;
       }
-      return total += packagePrice;
-  }, 0);
+      return (total += packagePrice);
+    }, 0);
     const totalPrice = productPrice + smartDevicePrice;
     return totalPrice;
   };
@@ -444,22 +520,33 @@ export function DetailContract() {
     return total;
   };
   const onSubmitUpdateContract = (response) => {
-    // console.log(response, id, filterDevices[0].smartDeviceId);
-    // const form = new FormData();
-    // form.append('title', response.title);
-    // form.append('description', response.description);
-    // for (var i = 0; i < arrString.length; i++) {
-    //   form.append('devicePackages', arrString[i]);
-    // }
-    // for (var i = 0; i < filterDevices.length; i++) {
-    //   form.append('contractDetails', JSON.stringify(filterDevices[i]));
-    // }
-    mutateContract({
-      title: response.title,
-      description: response.description,
-      devicePackages: arrString,
-      contractDetails: filterDevices,
-    });
+    function checkEmptyArrayAndZeroQuantity(arrString, filterDevices) {
+      // Kiểm tra mảng rỗng
+      const isEmptyArray = arrString.length === 0;
+      const hasOnlyZeroQuantity = filterDevices.every(item => item.quantity === 0);
+  
+      // Trả về true nếu cả hai điều kiện đều thỏa mãn
+      return isEmptyArray && hasOnlyZeroQuantity;
+  
+
+  }
+
+    if(checkEmptyArrayAndZeroQuantity(arrString, filterDevices)){
+      messageApi.open({
+        type: 'error',
+        content: 'Không có sản phẩm nào trong hợp đồng',
+      });
+      return;
+    }else{
+      mutateContract({
+        title: response.title,
+        description: response.description,
+        devicePackages: arrString,
+        contractDetails: filterDevices,
+      });
+    }
+   
+    
   };
   const filterRemoveHandle = (itemId) => {
     const arrRemove = newArrSmart.filter(
@@ -468,7 +555,7 @@ export function DetailContract() {
     const newFilterDevices = filterDevices.filter(
       (item) => item.smartDeviceId !== itemId
     );
-
+     
     setNewArrSmart(arrRemove);
     setFilterDevices(newFilterDevices);
   };
@@ -782,6 +869,9 @@ export function DetailContract() {
                       Tên gói thiết bị
                     </th>
                     <th className='w-[20%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
+                      Số lượng
+                    </th>
+                    <th className='w-[20%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
                       Giá
                     </th>
                     <th className='w-[20%] pl-[20px] text-center  font-poppin font-semibold text-[13px] text-[#9599AD]'>
@@ -801,10 +891,32 @@ export function DetailContract() {
                           </span>
                         </div>
                       </td>
+                      <td className='px-[20px]'>
+                        <div class='flex items-center'>
+                          <span
+                            onClick={() => decreaseQuantityPackage(index)}
+                            class='btn decrease bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded-l'
+                          >
+                            -
+                          </span>
+                          <input
+                            type='text'
+                            class='quantity-input bg-white focus:outline-none focus:ring focus:border-blue-300 border-l border-r w-16 text-center'
+                            value={item?.quantity}
+                          ></input>
+
+                          <span
+                            onClick={() => increaseQuantityPackage(index)}
+                            class='btn increase bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded-r'
+                          >
+                            +
+                          </span>
+                        </div>
+                      </td>
                       <td className=''>
                         <div className='flex flex-col items-start'>
                           <span className='text-center font-poppin text-[14px] font-medium'>
-                            {formatCurrency(item?.price)}
+                            {formatCurrency(item?.price * item?.quantity)}
                           </span>
                         </div>
                       </td>
@@ -819,8 +931,10 @@ export function DetailContract() {
                         <div className='flex flex-col items-start'>
                           <span className='text-center font-poppin text-[14px] font-medium'>
                             {formatCurrency(
-                              item?.price -
-                                item?.price * (item?.discountAmount * 0.01)
+                              item?.price * item?.quantity -
+                                item?.price *
+                                  item?.quantity *
+                                  (item?.discountAmount * 0.01)
                             )}
                           </span>
                         </div>

@@ -9,12 +9,12 @@ const packageAPI = {
   },
   getPackageDevicesList: () => {
     return axiosClient.get(
-      `${END_POINT_API.DEVICE_PACKAGE}?status=Active`
+      `${END_POINT_API.DEVICE_PACKAGE}?status=Active&pageSize=200`
     );
   },
   getPackageDevicesListContract: (manuName) => {
     return axiosClient.get(
-      `${END_POINT_API.DEVICE_PACKAGE}?manufacturerName=${manuName}&status=Active`
+      `${END_POINT_API.DEVICE_PACKAGE}?manufacturerName=${manuName}&status=Active&pageSize=200`
     );
   },
   getPackageDevicesById: (packageId) => {

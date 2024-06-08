@@ -11,7 +11,7 @@ const surveyReport = {
   getSurveyReportById: (surveyId) => {
     return axiosClient.get(`${END_POINT_API.SURVEY_REPORT}/${surveyId}`);
   },
-  updateSurveyReport: (contractId, params) => axiosClient.put(`${END_POINT_API.SURVEY_REPORT}/${contractId}`, params)
+  updateSurveyReport: (params, contractId) => axiosClient.put(`${END_POINT_API.SURVEY_REPORT}/${contractId}`, params)
   
 };
 export default surveyReport;

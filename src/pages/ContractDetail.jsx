@@ -34,7 +34,7 @@ import staffAPI from '../api/staff';
 import userLoginApi from '../api/user';
 import contractAPI from '../api/contract';
 import PurePanel from 'antd/es/tooltip/PurePanel';
-export function CreateSurvey() {
+export function ContractDetail() {
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
   const [open, setOpen] = useState(false);
@@ -53,7 +53,7 @@ export function CreateSurvey() {
   const [selectedFiles, setselectedFiles] = useState();
   const [filterDevices, setFilterDevices] = useState([]);
   const [promotionItem, setPromotionItem] = useState();
-  const [recommendPackage, setRecommendPackage]= useState();
+  const [recommendPackage, setRecommendPackage] = useState();
   const [listDevices, setListDevice] = useState({
     responses: [],
   });
@@ -70,7 +70,7 @@ export function CreateSurvey() {
   const [arrString, setNewArrString] = useState([]);
   const [devicesRender, setDevicesRender] = useState();
   const [surveyReportList, setSurveyReportList] = useState();
-  let { id } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const dateInstall = [
     {
@@ -164,8 +164,8 @@ export function CreateSurvey() {
           content: 'Tạo thành công hợp đồng',
         });
         setTimeout(() => {
-          navigate("/survey")
-        }, 1000)
+          navigate('/survey');
+        }, 1000);
       },
       onError: (error) => {
         console.log(error);
@@ -176,7 +176,8 @@ export function CreateSurvey() {
       },
     });
   const { isPending: deviceListLoading, mutate: mutateDevices } = useMutation({
-    mutationFn: () => packageAPI.getPackageDevicesListContract(recommendPackage),
+    mutationFn: () =>
+      packageAPI.getPackageDevicesListContract(recommendPackage),
 
     onSuccess: (response) => {
       const outputArray = [];
@@ -220,6 +221,22 @@ export function CreateSurvey() {
       });
     },
   });
+  const { isPending: surveyReportLoad, mutate: mutateSurveyReport } =
+    useMutation({
+      mutationFn: (params) => surveyReport.updateSurveyReport(params, id),
+      onSuccess: (response) => {
+        messageApi.open({
+          type: 'success',
+          content: 'Cập nhật báo cáo khảo sát thành công',
+        });
+      },
+      onError: () => {
+        messageApi.open({
+          type: 'error',
+          content: 'Error occur',
+        });
+      },
+    });
   const increaseQuantity = (index) => {
     // Tạo một bản sao mới của mảng newArr
     const newArrCopy = [...newArrSmart];
@@ -258,7 +275,7 @@ export function CreateSurvey() {
   };
   const calculateDiscountedPrice = (price, quantity, discount) => {
     if (typeof price === 'number' && typeof discount === 'number') {
-      return (price * quantity) - price * (discount / 100);
+      return price * quantity - price * (discount / 100);
     }
     return price; // Nếu không có discount, trả về giá gốc
   };
@@ -266,22 +283,30 @@ export function CreateSurvey() {
     useMutation({
       mutationFn: () => surveyReport.getSurveyReportById(id),
       onSuccess: (response) => {
-        setRecommendPackage(response.recommendDevicePackage.manufacturer.name)
-      
+        setRecommendPackage(response.recommendDevicePackage.manufacturer.name);
+
         setSurveyReportList(response.surveyRequest);
         form.setFieldsValue({
           staffId: response.surveyRequest.staff.accountId,
+          appointmentDate:
+            response?.appointmentDate == null
+              ? ''
+              : dayjs(response?.appointmentDate, 'YYYY/MM/DD'),
+          roomArea: response.roomArea,
+          description: response.description,
         });
         const uniquePackages = [];
         const packageIdItem = [];
-          if (response.recommendDevicePackage) {
-            uniquePackages.push({ ...response.recommendDevicePackage, quantity: 1 });
-  
-          }
-          setPackageId([...packageId, response.recommendDevicePackage.id]);
-          packageIdItem.push(response.recommendDevicePackage.id);
-          setNewArr(uniquePackages);
-          setNewArrString(packageIdItem);
+        if (response.recommendDevicePackage) {
+          uniquePackages.push({
+            ...response.recommendDevicePackage,
+            quantity: 1,
+          });
+        }
+        setPackageId([...packageId, response.recommendDevicePackage.id]);
+        packageIdItem.push(response.recommendDevicePackage.id);
+        setNewArr(uniquePackages);
+        setNewArrString(packageIdItem);
         // console.log(arrProduct);
       },
       onError: () => {},
@@ -289,7 +314,7 @@ export function CreateSurvey() {
 
   useEffect(() => {
     // MutateManu();
-    if(recommendPackage){
+    if (recommendPackage) {
       mutateDevices(recommendPackage);
     }
     if (id) {
@@ -315,7 +340,6 @@ export function CreateSurvey() {
     //   };
     // });
     arrString.push(newArrCopy[index].id);
-    
   };
 
   const decreaseQuantityPackage = (index) => {
@@ -333,20 +357,18 @@ export function CreateSurvey() {
     if (indexT !== -1) {
       arrString.splice(index, 1);
     }
-
-    console.log(arrString);
-    // const filteredDevices = newArrCopy.map((device) => {
-    //   return {
-    //     smartDeviceId: device.smartDeviceId,
-    //     quantity: device.quantity,
-    //   };
-    // });
-
-    // Cập nhật lại state của newArr với bản sao mới
-    // setFilterDevicesPackage(filteredDevices);
+  };
+  const filterRemoveHandle = (itemId) => {
+    // console.log(itemId);
+    const arrRemove = newArr.filter((item) => item.id !== itemId);
+    arrString.pop();
+    setNewArr(arrRemove);
   };
   const handleChange = (value) => {
     const updatedArr = [...newArr];
+    if (updatedArr.length == 1) {
+      return;
+    }
     const newArrString = [];
     let newArrList = listDevices.data.map((item) => {
       return {
@@ -441,9 +463,10 @@ export function CreateSurvey() {
       let productPrice = product.price;
       if (product.promotions && product.promotions.length > 0) {
         const discount = product.promotions[0].discountAmount;
-        productPrice = (product.price * product.quantity) - product.price * (discount / 100);
-      }else{
-        productPrice = (product.price * product.quantity)
+        productPrice =
+          product.price * product.quantity - product.price * (discount / 100);
+      } else {
+        productPrice = product.price * product.quantity;
       }
       return (total += productPrice);
     }, 0);
@@ -455,7 +478,7 @@ export function CreateSurvey() {
       return (total += devicePrice + installationPrice);
     }, 0);
     const totalPrice = productPrice + smartDevicePrice;
-    return totalPrice
+    return totalPrice;
   };
 
   function handleAcceptedFiles(files) {
@@ -477,37 +500,31 @@ export function CreateSurvey() {
     return total;
   };
   const onSubmitCreateSurvey = (response) => {
-    function checkEmptyArrayAndZeroQuantity(arrString, filterDevices) {
+    console.log(response);
+    function checkEmptyArrayAndZeroQuantity(arrString) {
       // Kiểm tra mảng rỗng
       const isEmptyArray = arrString.length === 0;
-      const hasOnlyZeroQuantity = filterDevices.every(item => item.quantity === 0);
-  
-      // Trả về true nếu cả hai điều kiện đều thỏa mãn
-      return isEmptyArray && hasOnlyZeroQuantity;
-  
 
-  }
+      // Trả về true nếu cả hai điều kiện đều thỏa mãn
+      return isEmptyArray;
+    }
     // console.log(response, id, userId);
     // console.log(response, id, filterDevices[0].smartDeviceId);
-    if(checkEmptyArrayAndZeroQuantity(arrString, filterDevices)){
+    if (checkEmptyArrayAndZeroQuantity(arrString)) {
       messageApi.open({
         type: 'error',
-        content: 'Không có sản phẩm nào để tạo hợp đồng',
+        content: 'Không có sản phẩm nào để tạo khảo sát',
       });
       return;
-    }else{
-      mutateContract({
-        surveyId: id,
-        tellerId: userId,
-        staffId: response.staffId,
-        title: response.title,
+    } else {
+      mutateSurveyReport({
+        recommendDevicePackageId: arrString[0],
+        appointmentDate: response.appointmentDate,
+        roomArea: response.roomArea,
         description: response.description,
-        startPlanDate: response.dateContract.format('YYYY-MM-DD'),
-        devicePackages: arrString,
-        contractDetails: filterDevices,
+        status: 'Pending',
       });
     }
-   
   };
   return (
     <>
@@ -531,10 +548,7 @@ export function CreateSurvey() {
                 <div className='flex items-center mb-[15px] gap-[24px]'>
                   <div className='w-full'>
                     <div className='mb-[8px]'>
-                      <Form.Item
-                        label='Ngày lắp đặt dự kiến'
-                        name='dateContract'
-                      >
+                      <Form.Item label='Ngày hẹn' name='appointmentDate'>
                         <DatePicker
                           style={{
                             width: '100%',
@@ -573,18 +587,18 @@ export function CreateSurvey() {
                     </div>
                   </div>
                   <div className='w-full'>
-                    <Form.Item label='Tên hợp đồng' name='title'>
+                    <Form.Item label='diện tích phòng' name='roomArea'>
                       <Input
                         className='rounded-[4px] w-full px-[15px] pt-[8px] pb-[10px] font-poppin font-normal text-[13px] outline-none border border-[#CED4DA]'
                         required
-                        placeholder='Contract name'
+                        placeholder='Diện tích phòng'
                       ></Input>
                     </Form.Item>
                   </div>
                 </div>
                 <div className='flex items-center mb-[15px] gap-[24px]'>
                   <div className='w-full'>
-                    <Form.Item label='Nhập mô tả' name='description'>
+                    <Form.Item label='Mô tả' name='description'>
                       <TextArea
                         className='rounded-[4px] w-full px-[15px] pt-[8px] pb-[10px] font-poppin font-normal text-[13px] outline-none border border-[#CED4DA]'
                         required
@@ -636,48 +650,6 @@ export function CreateSurvey() {
                     </div>
                   </div>
                 </div>
-                <div className='flex items-center mb-[15px] gap-[24px]'>
-                  <div className='w-full'>
-                    <div className='mb-[8px]'>
-                      <label
-                        className='font-poppin font-medium text-[13px]'
-                        htmlFor=''
-                      >
-                        Sản phẩm 
-                      </label>
-                    </div>
-                    <div className='w-full'>
-                      <Select
-                        showSearch
-                        className=''
-                        style={{
-                          width: '100%',
-                        }}
-                        value={undefined}
-                        placeholder='Select product of manufacture'
-                        open={openProductSmart}
-                        filterOption={(input, option) =>
-                          (option?.label ?? '').includes(input)
-                        }
-                        filterSort={(optionA, optionB) =>
-                          (optionA?.label ?? '')
-                            .toLowerCase()
-                            .localeCompare((optionB?.label ?? '').toLowerCase())
-                        }
-                        onChange={handleSmartChange}
-                        options={devicesRender}
-                        onDropdownVisibleChange={(visible) =>
-                          setOpenProductSmart(visible)
-                        }
-                        dropdownRender={(menu) => <div>{menu}</div>}
-                      >
-                        {devicesRender?.map((item) => (
-                          <Option value={item.value}>{item.label}</Option>
-                        ))}
-                      </Select>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -693,18 +665,19 @@ export function CreateSurvey() {
                       <th className='w-[40%] pl-[20px] text-start font-poppin font-semibold text-[13px] text-[#9599AD]'>
                         Tên gói thiết bị
                       </th>
-                      <th className='w-[20%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
-                      Số lượng
-                    </th>
+
                       <th className='w-[20%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
                         Giá
                       </th>
-                      
+
                       <th className='w-[20%] pl-[20px] text-center  font-poppin font-semibold text-[13px] text-[#9599AD]'>
                         Mã giảm
                       </th>
                       <th className='w-[20%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
                         Tổng tiền
+                      </th>
+                      <th className='w-[10%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
+                        Xóa
                       </th>
                     </tr>
                     {newArr?.map((item, index) => (
@@ -720,39 +693,18 @@ export function CreateSurvey() {
                             </span>
                           </div>
                         </td>
-                        <td className='px-[20px]'>
-                        <div class='flex items-center'>
-                          <span
-                            onClick={() => decreaseQuantityPackage(index)}
-                            class='btn decrease bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded-l'
-                          >
-                            -
-                          </span>
-                          <input
-                            type='text'
-                            class='quantity-input bg-white focus:outline-none focus:ring focus:border-blue-300 border-l border-r w-16 text-center'
-                            value={item?.quantity}
-                          ></input>
 
-                          <span
-                            onClick={() => increaseQuantityPackage(index)}
-                            class='btn increase bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded-r'
-                          >
-                            +
-                          </span>
-                        </div>
-                      </td>
                         <td className=''>
                           <div className='flex flex-col items-start'>
                             <span className='text-center font-poppin text-[14px] font-medium'>
-                            {formatCurrency(item?.price * item?.quantity)}
+                              {formatCurrency(item?.price * item?.quantity)}
                             </span>
                           </div>
                         </td>
                         <td className=''>
                           <div className='flex flex-col items-center'>
                             <span className='text-center font-poppin text-[14px] font-medium'>
-                            {item?.discountAmount}%
+                              {item?.discountAmount}%
                             </span>
                           </div>
                         </td>
@@ -762,7 +714,8 @@ export function CreateSurvey() {
                               {item?.promotions && item.promotions.length > 0
                                 ? formatCurrency(
                                     calculateDiscountedPrice(
-                                      item.price, item.quantity,
+                                      item.price,
+                                      item.quantity,
                                       item.promotions[0]?.discountAmount
                                     )
                                   )
@@ -770,94 +723,26 @@ export function CreateSurvey() {
                             </span>
                           </div>
                         </td>
+                        <td className=''>
+                          <div className='flex items-center justify-center cursor-pointer'>
+                            <span className='cursor-pointer text-center font-poppin text-[14px] font-medium'>
+                              <Icon
+                                onClick={() => filterRemoveHandle(item?.id)}
+                                icon='material-symbols:delete-forever-outline'
+                                width='20'
+                                height='20'
+                                style={{ color: '#f37272' }}
+                              />
+                            </span>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </table>
-                  
                 </div>
               ) : (
                 ''
               )}
-              <div className='px-[24px] pt-[24px]'>
-                <div className='bg-[white]  pt-[13px] pb-[16px] shadow-md'>
-                  <div className='flex items-center justify-between mx-[20px] mb-[20px] '>
-                    {/* <SearchInput /> */}
-                  </div>
-                  <table className='w-full'>
-                    <tr className='w-full'>
-                      <th className='w-[40%] pl-[20px] text-start font-poppin font-semibold text-[13px] text-[#9599AD]'>
-                        Tên thiết bị
-                      </th>
-                      <th className='w-[20%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
-                        Số lượng
-                      </th>
-                      <th className='w-[20%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
-                        Giá
-                      </th>
-                      <th className='w-[20%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
-                        Giá lắp đặt
-                      </th>
-                    </tr>
-                    {newArrSmart?.map((item, index) => (
-                      <tr className='border-t border-b border-[#E9EBEC] '>
-                        <td className='gap-[8px] pl-[14px] py-[12px] flex  items-center '>
-                          {/* <img
-                          src={item?.images[0].url}
-                          className='w-[24px] h-[24px]'
-                        /> */}
-                          <div className='flex flex-col'>
-                            <span className='font-poppin text-[14px] font-medium text-[#495057] '>
-                              {item?.smartDevice?.name}
-                            </span>
-                          </div>
-                        </td>
-                        <td className='px-[20px]'>
-                          <div class='flex items-center'>
-                            <span
-                              onClick={() => decreaseQuantity(index)}
-                              class='btn decrease bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded-l'
-                            >
-                              -
-                            </span>
-                            <input
-                              type='text'
-                              class='quantity-input bg-white focus:outline-none focus:ring focus:border-blue-300 border-l border-r w-16 text-center'
-                              value={item?.smartDeviceQuantity}
-                            ></input>
-
-                            <span
-                              onClick={() => increaseQuantity(index)}
-                              class='btn increase bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded-r'
-                            >
-                              +
-                            </span>
-                          </div>
-                        </td>
-                        <td className=''>
-                          <div className='flex flex-col items-start'>
-                            <span className='text-center font-poppin text-[14px] font-medium'>
-                              {formatCurrency(
-                                item?.smartDevice?.price *
-                                  item?.smartDeviceQuantity
-                              )}
-                            </span>
-                          </div>
-                        </td>
-                        <td className=''>
-                          <div className=' '>
-                            <span className='pl-[20px] text-center font-poppin text-[14px] font-medium'>
-                              {formatCurrency(
-                                item?.smartDevice?.installationPrice
-                              )}
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </table>
-                  
-                </div>
-              </div>
             </div>
 
             <div className='py-[20px] px-[20px] shadow-md'>
@@ -896,7 +781,7 @@ export function CreateSurvey() {
                 loading={createSurveyReportLoading}
                 htmlType='submit'
               >
-                Tạo hợp đồng
+                Chỉnh sửa khảo sát
               </Button>
             </div>
           </div>

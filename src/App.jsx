@@ -44,6 +44,7 @@ import { DetailDoingContract } from './pages/DetailDoingContract';
 import { PayloadContext } from './context/payload';
 import { DetailDoneConstruction } from './pages/DetailDoneConstruction';
 import { ContractDetail } from './pages/ContractDetail';
+import { DepositDoingContract } from './pages/DepositDoingContract';
 function App() {
   const firebaseConfig = {
     apiKey: "AIzaSyA7whJONp5a-D-Taxc5Hq3LqxO0RG0aDB0",
@@ -101,6 +102,7 @@ function App() {
           <Route path='/survey' element={<SurveyPage />} />
           <Route path='/request' element={<RequetsPage />} />
           <Route path='/device-page' element={<DevicePage />} />
+          <Route path='/deposit-doing-contract/:id' element={<DepositDoingContract/>}/>
           <Route path='/survey/contract-detail/:id' element={<ContractDetail />} />
           <Route
             path='/device-page/update-device/:id'

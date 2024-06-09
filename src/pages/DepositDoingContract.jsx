@@ -36,7 +36,7 @@ import contractAPI from '../api/contract';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { Invoices } from './Invoice';
 import { ViewInVoices } from './ViewInvoice';
-export function DetailContract() {
+export function DepositDoingContract() {
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
   const [openProduct, setOpenProduct] = useState(false);
@@ -712,7 +712,7 @@ const navigate = useNavigate();
                   <div className='w-full'>
                     <Form.Item label='Tên hợp đồng' name='title'>
                       <Input
-                        //    disabled
+                           disabled
                         className='rounded-[4px] w-full px-[15px] pt-[8px] pb-[10px] font-poppin font-normal text-[13px] outline-none border border-[#CED4DA]'
                         required
                         placeholder='Contract name'
@@ -772,6 +772,7 @@ const navigate = useNavigate();
                   <div className='w-full'>
                     <Form.Item label='Nhập mô tả' name='description'>
                       <TextArea
+                      disabled
                         className='rounded-[4px] w-full px-[15px] pt-[8px] pb-[10px] font-poppin font-normal text-[13px] outline-none border border-[#CED4DA]'
                         required
                         placeholder='Input description'
@@ -792,6 +793,7 @@ const navigate = useNavigate();
                     </div>
                     <div className='w-full'>
                       <Select
+                      disabled
                         showSearch
                         className=''
                         style={{
@@ -834,6 +836,7 @@ const navigate = useNavigate();
                     </div>
                     <div className='w-full'>
                       <Select
+                      disabled
                         showSearch
                         className=''
                         style={{
@@ -890,9 +893,7 @@ const navigate = useNavigate();
                     <th className='w-[20%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
                       Tổng tiền
                     </th>
-                    <th className='w-[10%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
-                        Xóa
-                      </th>
+            
                   </tr>
                   {newArr?.map((item, index) => (
                     <tr className='border-t border-b border-[#E9EBEC] '>
@@ -906,24 +907,24 @@ const navigate = useNavigate();
                       </td>
                       <td className='px-[20px]'>
                         <div class='flex items-center'>
-                          <span
+                          {/* <span
                             onClick={() => decreaseQuantityPackage(index)}
                             class='btn decrease bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded-l'
                           >
                             -
-                          </span>
+                          </span> */}
                           <input
                             type='text'
                             class='quantity-input bg-white focus:outline-none focus:ring focus:border-blue-300 border-l border-r w-16 text-center'
                             value={item?.quantity}
                           ></input>
 
-                          <span
+                          {/* <span
                             onClick={() => increaseQuantityPackage(index)}
                             class='btn increase bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded-r'
                           >
                             +
-                          </span>
+                          </span> */}
                         </div>
                       </td>
                       <td className=''>
@@ -952,21 +953,7 @@ const navigate = useNavigate();
                           </span>
                         </div>
                       </td>
-                      <td className=''>
-                          <div className='flex items-center justify-center cursor-pointer'>
-                            <span className='cursor-pointer text-center font-poppin text-[14px] font-medium'>
-                              <Icon
-                                onClick={() =>
-                                  filterRemoveAllHandle(item?.devicePackageId)
-                                }
-                                icon='material-symbols:delete-forever-outline'
-                                width='20'
-                                height='20'
-                                style={{ color: '#f37272' }}
-                              />
-                            </span>
-                          </div>
-                        </td>
+
                     </tr>
                   ))}
                 </table>
@@ -994,9 +981,7 @@ const navigate = useNavigate();
                       <th className='w-[15%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
                         Tổng
                       </th>
-                      <th className='w-[10%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
-                        Xóa
-                      </th>
+             
                     </tr>
                     {newArrSmart?.map((item, index) => (
                       <tr className='border-t border-b border-[#E9EBEC] '>
@@ -1013,24 +998,24 @@ const navigate = useNavigate();
                         </td>
                         <td className='px-[20px]'>
                           <div class='flex items-center'>
-                            <span
+                            {/* <span
                               onClick={() => decreaseQuantity(index)}
                               class='btn decrease bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded-l'
                             >
                               -
-                            </span>
+                            </span> */}
                             <input
                               type='text'
                               class='quantity-input bg-white focus:outline-none focus:ring focus:border-blue-300 border-l border-r w-16 text-center'
                               value={item?.quantity}
                             ></input>
-
+{/* 
                             <span
                               onClick={() => increaseQuantity(index)}
                               class='btn increase bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded-r'
                             >
                               +
-                            </span>
+                            </span> */}
                           </div>
                         </td>
                         <td className=''>
@@ -1055,21 +1040,7 @@ const navigate = useNavigate();
                             </span>
                           </div>
                         </td>
-                        <td className=''>
-                          <div className='flex items-center justify-center cursor-pointer'>
-                            <span className='cursor-pointer text-center font-poppin text-[14px] font-medium'>
-                              <Icon
-                                onClick={() =>
-                                  filterRemoveHandle(item?.smartDeviceId)
-                                }
-                                icon='material-symbols:delete-forever-outline'
-                                width='20'
-                                height='20'
-                                style={{ color: '#f37272' }}
-                              />
-                            </span>
-                          </div>
-                        </td>
+                 
                       </tr>
                     ))}
                   </table>
@@ -1108,7 +1079,7 @@ const navigate = useNavigate();
                   {formatCurrency(totalAllPrice())}
                 </span>
               </div>
-              <div className='flex items-center justify-between'>
+              {/* <div className='flex items-center justify-between'>
                 <Button
                   type='primary'
                   htmlType='submit'
@@ -1116,7 +1087,7 @@ const navigate = useNavigate();
                 >
                   Chỉnh sửa hợp đồng
                 </Button>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

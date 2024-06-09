@@ -559,6 +559,7 @@ export function ContractDetail() {
                             // ),
                             'YYYY-MM-DD'
                           )}
+                          disabled
                         />
                       </Form.Item>
                     </div>
@@ -576,6 +577,7 @@ export function ContractDetail() {
                             setOpenDate(visible)
                           }
                           defaultValue={surveyReportList?.staff.accountId}
+                          disabled
                         >
                           {listStaff.data?.map((item, index) => (
                             <Option value={item.leadAccountId} key={index}>
@@ -592,6 +594,7 @@ export function ContractDetail() {
                         className='rounded-[4px] w-full px-[15px] pt-[8px] pb-[10px] font-poppin font-normal text-[13px] outline-none border border-[#CED4DA]'
                         required
                         placeholder='Diện tích phòng'
+                        disabled
                       ></Input>
                     </Form.Item>
                   </div>
@@ -603,6 +606,7 @@ export function ContractDetail() {
                         className='rounded-[4px] w-full px-[15px] pt-[8px] pb-[10px] font-poppin font-normal text-[13px] outline-none border border-[#CED4DA]'
                         required
                         placeholder='Input description'
+                        disabled
                         rows={8}
                       ></TextArea>
                     </Form.Item>
@@ -622,6 +626,7 @@ export function ContractDetail() {
                       <Select
                         showSearch
                         className=''
+                        disabled
                         style={{
                           width: '100%',
                         }}
@@ -676,9 +681,7 @@ export function ContractDetail() {
                       <th className='w-[20%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
                         Tổng tiền
                       </th>
-                      <th className='w-[10%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
-                        Xóa
-                      </th>
+                     
                     </tr>
                     {newArr?.map((item, index) => (
                       <tr className='border-t border-b border-[#E9EBEC] '>
@@ -723,19 +726,7 @@ export function ContractDetail() {
                             </span>
                           </div>
                         </td>
-                        <td className=''>
-                          <div className='flex items-center justify-center cursor-pointer'>
-                            <span className='cursor-pointer text-center font-poppin text-[14px] font-medium'>
-                              <Icon
-                                onClick={() => filterRemoveHandle(item?.id)}
-                                icon='material-symbols:delete-forever-outline'
-                                width='20'
-                                height='20'
-                                style={{ color: '#f37272' }}
-                              />
-                            </span>
-                          </div>
-                        </td>
+                     
                       </tr>
                     ))}
                   </table>
@@ -776,13 +767,7 @@ export function ContractDetail() {
                   {formatCurrency(totalAllPrice())}
                 </span>
               </div>
-              <Button
-                type='primary'
-                loading={createSurveyReportLoading}
-                htmlType='submit'
-              >
-                Chỉnh sửa khảo sát
-              </Button>
+            
             </div>
           </div>
         </div>

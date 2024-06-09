@@ -509,6 +509,17 @@ export function CreateSurvey() {
     }
    
   };
+  const filterRemoveHandle = (itemId) => {
+    const arrRemove = newArrSmart.filter(
+      (item) => item.smartDeviceId !== itemId
+    );
+    const newFilterDevices = filterDevices.filter(
+      (item) => item.smartDeviceId !== itemId
+    );
+     
+    setNewArrSmart(arrRemove);
+    setFilterDevices(newFilterDevices);
+  };
   return (
     <>
       {contextHolder}
@@ -797,6 +808,12 @@ export function CreateSurvey() {
                       <th className='w-[20%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
                         Giá lắp đặt
                       </th>
+                      <th className='w-[15%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
+                        Tổng
+                      </th>
+                      <th className='w-[10%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
+                        Xóa
+                      </th>
                     </tr>
                     {newArrSmart?.map((item, index) => (
                       <tr className='border-t border-b border-[#E9EBEC] '>
@@ -849,6 +866,28 @@ export function CreateSurvey() {
                               {formatCurrency(
                                 item?.smartDevice?.installationPrice
                               )}
+                            </span>
+                          </div>
+                        </td>
+                        <td className=''>
+                          <div className='flex flex-col items-start'>
+                            <span className='text-center font-poppin text-[14px] font-medium'>
+                              {formatCurrency((item?.smartDevice.price * item?.smartDeviceQuantity) + item?.smartDevice.installationPrice)}
+                            </span>
+                          </div>
+                        </td>
+                        <td className=''>
+                          <div className='flex items-center justify-center cursor-pointer'>
+                            <span className='cursor-pointer text-center font-poppin text-[14px] font-medium'>
+                              <Icon
+                                onClick={() =>
+                                  filterRemoveHandle(item?.smartDeviceId)
+                                }
+                                icon='material-symbols:delete-forever-outline'
+                                width='20'
+                                height='20'
+                                style={{ color: '#f37272' }}
+                              />
                             </span>
                           </div>
                         </td>

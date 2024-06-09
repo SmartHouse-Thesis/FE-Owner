@@ -202,7 +202,7 @@ export function DepositPage() {
       render: (text, record) => (
         <div className='flex justify-center'>
           <Link
-            to={`/construction/${record.id}`}
+            to={`/deposit-doing-contract/${record.id}`}
             className='font-poppin text-[13px] font-normal text-green-300-600 inline-block py-[10px] px-[20px]'
           >
             Xem chi tiết

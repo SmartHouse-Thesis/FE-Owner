@@ -9,6 +9,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useDebounce } from '../hook/useDebounce';
 import 'dayjs/locale/vi';
 import customerAPI from '../api/customer';
+import surveyReport from '../api/survey-report';
 
 const { RangePicker } = DatePicker;
 
@@ -18,7 +19,8 @@ export function SurveyPage() {
   const [devices, setDevices] = useState([]);
   const navigate = useNavigate();
   const [filteredDevices, setFilteredDevices] = useState([]);
-  const [openPopupConfirm, setOpenPopUpConfirm] = useState(false);
+  const [updateId, setUpdateId] = useState();
+  const [confirmingId, setConfirmingId] = useState(null); // State to track currently confirming ID
   const [searchFilters, setSearchFilters] = useState({
     id: '',
     customerName: '',
@@ -39,7 +41,22 @@ export function SurveyPage() {
       });
     },
   });
-
+  const { isPending: surveyReportLoad, mutate: mutateSurveyReport } =
+    useMutation({
+      mutationFn: (params) => surveyReport.updateSurveyReport(params, updateId),
+      onSuccess: (response) => {
+        messageApi.open({
+          type: 'success',
+          content: 'Xóa báo cáo khảo sát thành công',
+        });
+      },
+      onError: () => {
+        messageApi.open({
+          type: 'error',
+          content: 'Error occur',
+        });
+      },
+    });
   const { isPending: customerListLoading, mutate: mutateCustomer } = useMutation({
     mutationFn: (customerId) => customerAPI.getCustomerbyId(customerId),
     onSuccess: (response) => {
@@ -58,18 +75,23 @@ export function SurveyPage() {
 
   useEffect(() => {
     mutate();
-  }, [searchValue]);
+  }, [searchValue, surveyReportLoad]);
 
   const handleCancelPopUpConfirm = () => {
-    setOpenPopUpConfirm(false);
+    setConfirmingId(null);
   };
 
-  const showPopconfirm = (accountId) => {
-    setOpenPopUpConfirm(true);
+  const showPopconfirm = (id) => {
+    setUpdateId(id);
+    setConfirmingId(id);
   };
 
-  const handleOkPopUpConfirm = (contractId) => {
+  const handleOkPopUpConfirm = (id) => {
     // Handle confirmation action
+    mutateSurveyReport({
+      status: 'Rejected'
+    })
+    setConfirmingId(null); // Reset confirming ID after confirmation
   };
 
   const handleFilterChange = (e, fieldName) => {
@@ -202,7 +224,7 @@ export function SurveyPage() {
         <Popconfirm
           title='Xóa khảo sát'
           description='Bạn có muốn xóa khảo sát này không?'
-          open={openPopupConfirm}
+          open={confirmingId === id} // Show only for currently confirming ID
           onConfirm={() => handleOkPopUpConfirm(id)}
           onCancel={handleCancelPopUpConfirm}
         >

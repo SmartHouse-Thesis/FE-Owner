@@ -285,6 +285,7 @@ const navigate = useNavigate();
     //   };
     // });
     arrString.push(newArrCopy[index].devicePackageId);
+   
     
   };
 
@@ -547,6 +548,15 @@ const navigate = useNavigate();
     }
    
     
+  };
+  
+  const filterRemoveAllHandle = (itemId) => {
+    console.log(arrString);
+    const arrRemove = newArr.filter(item => item.devicePackageId !== itemId);
+    const filteredArray = arrString.filter(item => item !== itemId);
+    console.log(filteredArray);
+    setNewArr(arrRemove);
+    setNewArrString(filteredArray);
   };
   const filterRemoveHandle = (itemId) => {
     const arrRemove = newArrSmart.filter(
@@ -880,6 +890,9 @@ const navigate = useNavigate();
                     <th className='w-[20%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
                       Tổng tiền
                     </th>
+                    <th className='w-[10%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
+                        Xóa
+                      </th>
                   </tr>
                   {newArr?.map((item, index) => (
                     <tr className='border-t border-b border-[#E9EBEC] '>
@@ -916,7 +929,7 @@ const navigate = useNavigate();
                       <td className=''>
                         <div className='flex flex-col items-start'>
                           <span className='text-center font-poppin text-[14px] font-medium'>
-                            {formatCurrency(item?.price * item?.quantity)}
+                            {formatCurrency(item?.price)}
                           </span>
                         </div>
                       </td>
@@ -939,6 +952,21 @@ const navigate = useNavigate();
                           </span>
                         </div>
                       </td>
+                      <td className=''>
+                          <div className='flex items-center justify-center cursor-pointer'>
+                            <span className='cursor-pointer text-center font-poppin text-[14px] font-medium'>
+                              <Icon
+                                onClick={() =>
+                                  filterRemoveAllHandle(item?.devicePackageId)
+                                }
+                                icon='material-symbols:delete-forever-outline'
+                                width='20'
+                                height='20'
+                                style={{ color: '#f37272' }}
+                              />
+                            </span>
+                          </div>
+                        </td>
                     </tr>
                   ))}
                 </table>

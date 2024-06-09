@@ -1,7 +1,7 @@
 import { Icon } from '@iconify/react';
 import { Pagination as CustomPagination } from '../components/Pagination';
 import { BreadCrumb } from '../components/BreadCrumb';
-import { Spin, message, Table, Input, Button, DatePicker, Pagination as AntPagination } from 'antd';
+import { Spin, message, Table, Input, Button, DatePicker, Pagination as AntPagination, Modal } from 'antd';
 import { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import contractAPI from '../api/contract';
@@ -15,7 +15,8 @@ export function DoingConstruction() {
   const [filteredData, setFilteredData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [imageURL, setImageURL] = useState('');
   const { isPending: contractLoading, mutate } = useMutation({
     mutationFn: () => contractAPI.getNewContract("InProgress"),
     onSuccess: (response) => {
@@ -29,11 +30,18 @@ export function DoingConstruction() {
       });
     },
   });
+  const showModal = (imageURL) => {
+   
+    setImageURL(imageURL);
+    setIsModalVisible(true);
+  };
 
   useEffect(() => {
     mutate();
   }, []);
-
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
   const getColumnSearchProps = (dataIndex, placeholder) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }}>
@@ -100,6 +108,21 @@ export function DoingConstruction() {
         <span className='font-poppin text-[14px] font-medium'>
           {record.customer.fullName}
         </span>
+      ),
+    },
+    {
+      title: 'Xem hình ảnh hợp đồng',
+      key: 'viewImages',
+      render: (text, record) => (
+        <div className='flex justify-center'>
+          <Button
+            type='link'
+            className='font-poppin text-[13px] font-normal text-red-600 inline-block py-[10px] px-[20px]'
+            onClick={() => showModal(record.imageUrl)} // Pass the image URL here
+          >
+            Xem hình ảnh
+          </Button>
+        </div>
       ),
     },
     {
@@ -185,6 +208,14 @@ export function DoingConstruction() {
           </div>
         </Spin>
       </div>
+      <Modal
+        visible={isModalVisible}
+        onCancel={handleCancel}
+        footer={null}
+        centered
+      >
+        <img src={imageURL} alt='Contract Image' style={{ width: '100%' }} />
+      </Modal>
     </>
   );
 }

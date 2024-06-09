@@ -43,8 +43,8 @@ export function RequetsPage() {
   const [contractDetail, setContractDetail] = useState();
   const [surveyId, setSurveyId] = useState(0);
   const [contractId, setContractId] = useState();
-  const [surveyDate, setSurveyDate] = useState(new Date());
-  const [renderModal, setRenderModal] = useState(false);
+  const [surveyDate, setSurveyDate] = useState(dayjs(new Date()).format('YYYY-MM-DD'));
+  const [renderModal, setRenderModal] = useState(true);
   const [filteredData, setFilteredData] = useState([]);
   const [contracts, setContracts] = useState([]); // State for contract modification requests
   const [filteredContracts, setFilteredContracts] = useState([]); // State for filtered contract modification requests
@@ -64,10 +64,10 @@ export function RequetsPage() {
   }); // State for contract modification filters
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-
+  console.log(surveyDate);
   const showModal = (surveyId, surveyDate) => {
     const newDate = surveyDate.split('T')[0];
-    setSurveyDate(newDate);
+    // setSurveyDate(newDate);
     setSurveyId(surveyId);
     setIsModalOpen(true);
     if (newDate) {
@@ -81,7 +81,7 @@ export function RequetsPage() {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    setRenderModal(false);
+
   };
 
   const showDetailModal = (ContractId) => {
@@ -120,9 +120,7 @@ export function RequetsPage() {
   };
 
   const selectDateHandler = (date) => {
-    if (date) {
-      setRenderModal(true);
-    }
+ 
   };
 
   const { isPending: staffLoading, mutate: mutateStaff } = useMutation({
@@ -600,7 +598,7 @@ export function RequetsPage() {
         <Form form={form} layout="vertical" onFinish={onSubmitCreateSurvey}>
           <Row gutter={[10, 10]}>
             <Col span={24}>
-              <Form.Item label="Chọn ngày" name="surveyDate">
+              {/* <Form.Item label="Chọn ngày" name="surveyDate">
                 <DatePicker
                   className="w-full"
                   showTime
@@ -608,7 +606,7 @@ export function RequetsPage() {
                   onChange={selectDateHandler}
                   disabledDate={disabledDate} // Prevent selecting past dates
                 /> 
-              </Form.Item>
+              </Form.Item> */}
               {renderModal ? (
                 <>
                   <Form.Item label="Chọn nhân viên" name="customerId">

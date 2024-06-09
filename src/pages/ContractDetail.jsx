@@ -598,7 +598,7 @@ export function ContractDetail() {
                 </div>
                 <div className='flex items-center mb-[15px] gap-[24px]'>
                   <div className='w-full'>
-                    <Form.Item label='Mô tả' name='description'>
+                    <Form.Item label='Nội dung' name='description'>
                       <TextArea
                         className='rounded-[4px] w-full px-[15px] pt-[8px] pb-[10px] font-poppin font-normal text-[13px] outline-none border border-[#CED4DA]'
                         required
@@ -615,7 +615,7 @@ export function ContractDetail() {
                         className='font-poppin font-medium text-[13px]'
                         htmlFor=''
                       >
-                        Gói sản phẩm gợi ý
+                        Tên gói đề xuất
                       </label>
                     </div>
                     <div className='w-full'>

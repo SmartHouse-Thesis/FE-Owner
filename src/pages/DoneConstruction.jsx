@@ -15,6 +15,9 @@ export function DoneConstruction() {
   const [pageSize, setPageSize] = useState(10);
   const [modalVisible, setModalVisible] = useState(false);
   const [imageSrc, setImageSrc] = useState('');
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [imageURL, setImageURL] = useState('');
+  const [contractId, setContractId] = useState();
 
   const { isPending: contractLoading, mutate } = useMutation({
     mutationFn: () => contractAPI.getNewContract('Completed'),
@@ -29,11 +32,40 @@ export function DoneConstruction() {
       });
     },
   });
+  const { isPending: contractLoadingId, mutate: mutateGetContractId } = useMutation({
+    mutationFn: () => contractAPI.getNewContractById(contractId),
+    onSuccess: (response) => {
+      console.log(response)
+      if(response.acceptance){
+        setImageSrc(response.acceptance.imageUrl);
+      }else{
+        setImageSrc();
+      }
+    },
+    onError: () => {
+      messageApi.open({
+        type: 'error',
+        content: 'Error occurred when getting the contract list',
+      });
+    },
+  });
+  const showModal = (imageURL) => {
+   
+    setImageURL(imageURL);
+    setIsModalVisible(true);
+  };
 
   useEffect(() => {
     mutate();
   }, []);
-
+  const clickOpenModal = (id) => {
+    mutateGetContractId(id)
+    setContractId(id);
+    setModalVisible(true);
+  }
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
   const getColumnSearchProps = (dataIndex, placeholder) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }}>
@@ -155,6 +187,21 @@ export function DoneConstruction() {
       ),
     },
     {
+      title: 'Xem hình ảnh hợp đồng',
+      key: 'viewImages',
+      render: (text, record) => (
+        <div className='flex justify-center'>
+          <Button
+            type='link'
+            className='font-poppin text-[13px] font-normal text-red-600 inline-block py-[10px] px-[20px]'
+            onClick={() => showModal(record.imageUrl)} // Pass the image URL here
+          >
+            Xem hình ảnh
+          </Button>
+        </div>
+      ),
+    },
+    {
       title: 'Xem bản nghiệm thu',
       key: 'viewAcceptance',
       render: (text, record) => (
@@ -165,8 +212,9 @@ export function DoneConstruction() {
           <Button
             type='link'
             onClick={() => {
-              setImageSrc(record.imageUrl);
-              setModalVisible(true);
+             
+              // setImageSrc(record.imageUrl);
+              clickOpenModal(record.id)
             }}
             className='font-poppin text-[13px] font-normal text-red-600 inline-block py-[10px] px-[20px]'
           >
@@ -206,6 +254,14 @@ export function DoneConstruction() {
           </div>
         </Spin>
       </div>
+      <Modal
+        visible={isModalVisible}
+        onCancel={handleCancel}
+        footer={null}
+        centered
+      >
+        <img src={imageURL} alt='Contract Image' style={{ width: '100%' }} />
+      </Modal>
       <Modal
         visible={modalVisible}
         onCancel={() => setModalVisible(false)}

@@ -210,21 +210,21 @@ export function DepositPage() {
         </div>
       ),
     },
-    {
-      title: 'Xem hình ảnh hợp đồng',
-      key: 'viewImages',
-      render: (text, record) => (
-        <div className='flex justify-center'>
-          <Button
-            type='link'
-            className='font-poppin text-[13px] font-normal text-red-600 inline-block py-[10px] px-[20px]'
-            onClick={() => showModal(record.imageUrl)} // Pass the image URL here
-          >
-            Xem hình ảnh
-          </Button>
-        </div>
-      ),
-    },
+    // {
+    //   title: 'Xem hình ảnh hợp đồng',
+    //   key: 'viewImages',
+    //   render: (text, record) => (
+    //     <div className='flex justify-center'>
+    //       <Button
+    //         type='link'
+    //         className='font-poppin text-[13px] font-normal text-red-600 inline-block py-[10px] px-[20px]'
+    //         onClick={() => showModal(record.imageUrl)} // Pass the image URL here
+    //       >
+    //         Xem hình ảnh
+    //       </Button>
+    //     </div>
+    //   ),
+    // },
     {
       title: 'Hủy hợp đồng',
       key: 'cancel',

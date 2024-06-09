@@ -104,11 +104,8 @@ export function MainHeader() {
                             link = `/request`;
                           } else if (item.data.type === 'Survey Report') {
                             link = `/survey/contract-detail/${item.data.link}`;
-                          } else if (item.data.type === 'Deposit') {
-                            link = `/construction/deposit`;
-                          }
-                           else if (item.data.type === 'Contracts Modification') {
-                            link = `/request`;
+                          } else if (item.data.type === 'Contracts Modification') {
+                            link = `/construction/${item.data.link}`;
                           }
                           return (
                             <li key={item.id} className=' flex gap-[10px] border-b pb-2'>

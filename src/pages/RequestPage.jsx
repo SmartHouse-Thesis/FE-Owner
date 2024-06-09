@@ -67,7 +67,8 @@ export function RequetsPage() {
   console.log(surveyDate);
   const showModal = (surveyId, surveyDate) => {
     const newDate = surveyDate.split('T')[0];
-    // setSurveyDate(newDate);
+    setSurveyDate(newDate);
+    mutateSurveyId(surveyId);
     setSurveyId(surveyId);
     setIsModalOpen(true);
     if (newDate) {
@@ -158,12 +159,13 @@ export function RequetsPage() {
   const { isPending: surveyDetailLoading, mutate: mutateSurveyId } = useMutation({
     mutationFn: () => surveyAPI.getSurveyById(surveyId),
     onSuccess: (response) => {
+      console.log(response);
       setSurveyDetail(response);
     },
     onError: () => {
       messageApi.open({
         type: 'error',
-        content: 'Error occur when get manufactures list',
+        content: 'Error occur when get survey list',
       });
     },
   });
@@ -235,9 +237,10 @@ export function RequetsPage() {
   }, [addRequestSurveyToUser, value,updateContractLoading]);
 
   const onSubmitCreateSurvey = (response) => {
+    console.log(surveyDetail.surveyDate)
     mutaateAddRequestSurvey({
       surveyId: surveyId,
-      surveyDate: response.surveyDate.format('YYYY-MM-DD'),
+      surveyDate: dayjs(surveyDetail.surveyDate).format('YYYY-MM-DD'),
       staffId: response.customerId,
       description: response.description,
     });

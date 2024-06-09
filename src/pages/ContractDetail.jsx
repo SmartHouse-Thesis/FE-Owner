@@ -275,9 +275,11 @@ export function ContractDetail() {
   };
   const calculateDiscountedPrice = (price, quantity, discount) => {
     if (typeof price === 'number' && typeof discount === 'number') {
-      return price * quantity - price * (discount / 100);
+      return price - price * (discount / 100);
     }
+    console.log(price);
     return price; // Nếu không có discount, trả về giá gốc
+
   };
   const { isPending: surveyReportLoading, mutate: mutateSurveyId } =
     useMutation({
@@ -299,7 +301,16 @@ export function ContractDetail() {
         const packageIdItem = [];
         if (response.recommendDevicePackage) {
           uniquePackages.push({
-            ...response.recommendDevicePackage,
+            devicePackageId: response.recommendDevicePackage.id,
+            name: response.recommendDevicePackage.name,
+            discountAmount: response.recommendDevicePackage.promotions[0]?.discountAmount || 0,
+            price: response.recommendDevicePackage.price,
+            manufacturer: response.recommendDevicePackage.manufacturer.name,
+            image: response.recommendDevicePackage.images[0]?.url || '',
+            warrantyDuration: response.recommendDevicePackage.warrantyDuration,
+            startWarranty: null,
+            endWarranty: null,
+            createAt: response.recommendDevicePackage.createAt,
             quantity: 1,
           });
         }
@@ -461,8 +472,8 @@ export function ContractDetail() {
   const totalAllPrice = () => {
     const productPrice = newArr.reduce((total, product) => {
       let productPrice = product.price;
-      if (product.promotions && product.promotions.length > 0) {
-        const discount = product.promotions[0].discountAmount;
+      if (product.discountAmount ) {
+        const discount = product.discountAmount;
         productPrice =
           product.price * product.quantity - product.price * (discount / 100);
       } else {
@@ -714,12 +725,12 @@ export function ContractDetail() {
                         <td className=''>
                           <div className='flex flex-col items-start'>
                             <span className='text-center font-poppin text-[14px] font-medium'>
-                              {item?.promotions && item.promotions.length > 0
+                              {item?.discountAmount
                                 ? formatCurrency(
                                     calculateDiscountedPrice(
                                       item.price,
                                       item.quantity,
-                                      item.promotions[0]?.discountAmount
+                                      item.discountAmount
                                     )
                                   )
                                 : formatCurrency(item.price * item.quantity)}

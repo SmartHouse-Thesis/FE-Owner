@@ -53,7 +53,7 @@ export function CreateSurvey() {
   const [selectedFiles, setselectedFiles] = useState();
   const [filterDevices, setFilterDevices] = useState([]);
   const [promotionItem, setPromotionItem] = useState();
-  const [recommendPackage, setRecommendPackage]= useState();
+  const [recommendPackage, setRecommendPackage] = useState();
   const [listDevices, setListDevice] = useState({
     responses: [],
   });
@@ -141,6 +141,10 @@ export function CreateSurvey() {
       });
     },
   });
+  const disabledDate = (current) => {
+    // Can not select days before today
+    return current && current < dayjs().startOf('day');
+  };
   const { isPending: listStaffLead, mutate: mutateLeadStaff } = useMutation({
     mutationFn: () => staffAPI.getLeadStaffAll(),
     onSuccess: (response) => {
@@ -164,8 +168,8 @@ export function CreateSurvey() {
           content: 'Tạo thành công hợp đồng',
         });
         setTimeout(() => {
-          navigate("/survey")
-        }, 1000)
+          navigate('/survey');
+        }, 1000);
       },
       onError: (error) => {
         console.log(error);
@@ -176,7 +180,8 @@ export function CreateSurvey() {
       },
     });
   const { isPending: deviceListLoading, mutate: mutateDevices } = useMutation({
-    mutationFn: () => packageAPI.getPackageDevicesListContract(recommendPackage),
+    mutationFn: () =>
+      packageAPI.getPackageDevicesListContract(recommendPackage),
 
     onSuccess: (response) => {
       const outputArray = [];
@@ -258,7 +263,7 @@ export function CreateSurvey() {
   };
   const calculateDiscountedPrice = (price, quantity, discount) => {
     if (typeof price === 'number' && typeof discount === 'number') {
-      return (price * quantity) - price * (discount / 100);
+      return price - price * (discount / 100);
     }
     return price; // Nếu không có discount, trả về giá gốc
   };
@@ -266,22 +271,34 @@ export function CreateSurvey() {
     useMutation({
       mutationFn: () => surveyReport.getSurveyReportById(id),
       onSuccess: (response) => {
-        setRecommendPackage(response.recommendDevicePackage.manufacturer.name)
-      
+        setRecommendPackage(response.recommendDevicePackage.manufacturer.name);
+
         setSurveyReportList(response.surveyRequest);
         form.setFieldsValue({
           staffId: response.surveyRequest.staff.accountId,
         });
         const uniquePackages = [];
         const packageIdItem = [];
-          if (response.recommendDevicePackage) {
-            uniquePackages.push({ ...response.recommendDevicePackage, quantity: 1 });
-  
-          }
-          setPackageId([...packageId, response.recommendDevicePackage.id]);
-          packageIdItem.push(response.recommendDevicePackage.id);
-          setNewArr(uniquePackages);
-          setNewArrString(packageIdItem);
+        if (response.recommendDevicePackage) {
+          uniquePackages.push({
+            devicePackageId: response.recommendDevicePackage.id,
+            name: response.recommendDevicePackage.name,
+            discountAmount: response.recommendDevicePackage.promotions[0]?.discountAmount || 0,
+            price: response.recommendDevicePackage.price,
+            manufacturer: response.recommendDevicePackage.manufacturer.name,
+            image: response.recommendDevicePackage.images[0]?.url || '',
+            warrantyDuration: response.recommendDevicePackage.warrantyDuration,
+            startWarranty: null,
+            endWarranty: null,
+            createAt: response.recommendDevicePackage.createAt,
+            quantity: 1,
+          });
+        }
+        setPackageId([...packageId, response.recommendDevicePackage.id]);
+        packageIdItem.push(response.recommendDevicePackage.id);
+
+        setNewArr(uniquePackages);
+        setNewArrString(packageIdItem);
         // console.log(arrProduct);
       },
       onError: () => {},
@@ -289,7 +306,7 @@ export function CreateSurvey() {
 
   useEffect(() => {
     // MutateManu();
-    if(recommendPackage){
+    if (recommendPackage) {
       mutateDevices(recommendPackage);
     }
     if (id) {
@@ -314,10 +331,9 @@ export function CreateSurvey() {
     //     quantity: device.quantity,
     //   };
     // });
-    arrString.push(newArrCopy[index].id);
-    
+    arrString.push(newArrCopy[index].devicePackageId);
   };
-
+  console.log(arrString);
   const decreaseQuantityPackage = (index) => {
     // Tạo một bản sao mới của mảng newArr
     const newArrCopy = [...newArr];
@@ -329,7 +345,7 @@ export function CreateSurvey() {
     }
 
     setNewArr(newArrCopy);
-    const indexT = arrString.indexOf(newArrCopy[index].id);
+    const indexT = arrString.indexOf(newArrCopy[index].devicePackageId);
     if (indexT !== -1) {
       arrString.splice(index, 1);
     }
@@ -439,11 +455,12 @@ export function CreateSurvey() {
   const totalAllPrice = () => {
     const productPrice = newArr.reduce((total, product) => {
       let productPrice = product.price;
-      if (product.promotions && product.promotions.length > 0) {
-        const discount = product.promotions[0].discountAmount;
-        productPrice = (product.price * product.quantity) - product.price * (discount / 100);
-      }else{
-        productPrice = (product.price * product.quantity)
+      if (product.discountAmount) {
+        const discount = product.discountAmount;
+        productPrice =
+          product.price * product.quantity - product.price * (discount / 100);
+      } else {
+        productPrice = product.price * product.quantity;
       }
       return (total += productPrice);
     }, 0);
@@ -455,7 +472,7 @@ export function CreateSurvey() {
       return (total += devicePrice + installationPrice);
     }, 0);
     const totalPrice = productPrice + smartDevicePrice;
-    return totalPrice
+    return totalPrice;
   };
 
   function handleAcceptedFiles(files) {
@@ -480,22 +497,19 @@ export function CreateSurvey() {
     function checkEmptyArrayAndZeroQuantity(arrString, filterDevices) {
       // Kiểm tra mảng rỗng
       const isEmptyArray = arrString.length === 0;
-      const hasOnlyZeroQuantity = filterDevices.every(item => item.quantity === 0);
-  
-      // Trả về true nếu cả hai điều kiện đều thỏa mãn
-      return isEmptyArray && hasOnlyZeroQuantity;
-  
 
-  }
+      // Trả về true nếu cả hai điều kiện đều thỏa mãn
+      return isEmptyArray;
+    }
     // console.log(response, id, userId);
     // console.log(response, id, filterDevices[0].smartDeviceId);
-    if(checkEmptyArrayAndZeroQuantity(arrString, filterDevices)){
+    if (checkEmptyArrayAndZeroQuantity(arrString, filterDevices)) {
       messageApi.open({
         type: 'error',
-        content: 'Không có sản phẩm nào để tạo hợp đồng',
+        content: 'Không có gói sản phẩm nào để tạo hợp đồng',
       });
       return;
-    }else{
+    } else {
       mutateContract({
         surveyId: id,
         tellerId: userId,
@@ -507,7 +521,6 @@ export function CreateSurvey() {
         contractDetails: filterDevices,
       });
     }
-   
   };
   const filterRemoveHandle = (itemId) => {
     const arrRemove = newArrSmart.filter(
@@ -516,10 +529,11 @@ export function CreateSurvey() {
     const newFilterDevices = filterDevices.filter(
       (item) => item.smartDeviceId !== itemId
     );
-     
+
     setNewArrSmart(arrRemove);
     setFilterDevices(newFilterDevices);
   };
+  console.log(newArr);
   return (
     <>
       {contextHolder}
@@ -556,6 +570,7 @@ export function CreateSurvey() {
                             // ),
                             'YYYY-MM-DD'
                           )}
+                          disabledDate={disabledDate}
                         />
                       </Form.Item>
                     </div>
@@ -654,7 +669,7 @@ export function CreateSurvey() {
                         className='font-poppin font-medium text-[13px]'
                         htmlFor=''
                       >
-                        Sản phẩm 
+                        Sản phẩm
                       </label>
                     </div>
                     <div className='w-full'>
@@ -705,12 +720,12 @@ export function CreateSurvey() {
                         Tên gói thiết bị
                       </th>
                       <th className='w-[20%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
-                      Số lượng
-                    </th>
+                        Số lượng
+                      </th>
                       <th className='w-[20%] pl-[20px] text-start  font-poppin font-semibold text-[13px] text-[#9599AD]'>
                         Giá
                       </th>
-                      
+
                       <th className='w-[20%] pl-[20px] text-center  font-poppin font-semibold text-[13px] text-[#9599AD]'>
                         Mã giảm
                       </th>
@@ -732,49 +747,50 @@ export function CreateSurvey() {
                           </div>
                         </td>
                         <td className='px-[20px]'>
-                        <div class='flex items-center'>
-                          <span
-                            onClick={() => decreaseQuantityPackage(index)}
-                            class='btn decrease bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded-l'
-                          >
-                            -
-                          </span>
-                          <input
-                            type='text'
-                            class='quantity-input bg-white focus:outline-none focus:ring focus:border-blue-300 border-l border-r w-16 text-center'
-                            value={item?.quantity}
-                          ></input>
+                          <div class='flex items-center'>
+                            <span
+                              onClick={() => decreaseQuantityPackage(index)}
+                              class='btn decrease bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded-l'
+                            >
+                              -
+                            </span>
+                            <input
+                              type='text'
+                              class='quantity-input bg-white focus:outline-none focus:ring focus:border-blue-300 border-l border-r w-16 text-center'
+                              value={item?.quantity}
+                            ></input>
 
-                          <span
-                            onClick={() => increaseQuantityPackage(index)}
-                            class='btn increase bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded-r'
-                          >
-                            +
-                          </span>
-                        </div>
-                      </td>
+                            <span
+                              onClick={() => increaseQuantityPackage(index)}
+                              class='btn increase bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded-r'
+                            >
+                              +
+                            </span>
+                          </div>
+                        </td>
                         <td className=''>
                           <div className='flex flex-col items-start'>
                             <span className='text-center font-poppin text-[14px] font-medium'>
-                            {formatCurrency(item?.price * item?.quantity)}
+                              {formatCurrency(item?.price * item?.quantity)}
                             </span>
                           </div>
                         </td>
                         <td className=''>
                           <div className='flex flex-col items-center'>
                             <span className='text-center font-poppin text-[14px] font-medium'>
-                            {item?.discountAmount}%
+                              {item?.discountAmount}%
                             </span>
                           </div>
                         </td>
                         <td className=''>
                           <div className='flex flex-col items-start'>
                             <span className='text-center font-poppin text-[14px] font-medium'>
-                              {item?.promotions && item.promotions.length > 0
+                              {item?.discountAmount
                                 ? formatCurrency(
                                     calculateDiscountedPrice(
-                                      item.price, item.quantity,
-                                      item.promotions[0]?.discountAmount
+                                      item.price,
+                                      item.quantity,
+                                      item?.discountAmount
                                     )
                                   )
                                 : formatCurrency(item.price * item.quantity)}
@@ -784,7 +800,6 @@ export function CreateSurvey() {
                       </tr>
                     ))}
                   </table>
-                  
                 </div>
               ) : (
                 ''
@@ -872,7 +887,11 @@ export function CreateSurvey() {
                         <td className=''>
                           <div className='flex flex-col items-start'>
                             <span className='text-center font-poppin text-[14px] font-medium'>
-                              {formatCurrency((item?.smartDevice.price * item?.smartDeviceQuantity) + item?.smartDevice.installationPrice)}
+                              {formatCurrency(
+                                item?.smartDevice.price *
+                                  item?.smartDeviceQuantity +
+                                  item?.smartDevice.installationPrice
+                              )}
                             </span>
                           </div>
                         </td>
@@ -894,7 +913,6 @@ export function CreateSurvey() {
                       </tr>
                     ))}
                   </table>
-                  
                 </div>
               </div>
             </div>
